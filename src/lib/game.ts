@@ -4,6 +4,9 @@ export type Locale="pl"|"en";
 export type Status="available"|"invited"|"interested"|"declined"|"confirmed";
 export type SponsorStatus="prospect"|"contacted"|"offered"|"partner"|"declined";
 export type ScaleId="regional"|"national"|"international";
+export type DepartmentId="airOps"|"safety"|"commercial"|"marketing";
+export type Department={id:DepartmentId;name:string;level:number;monthlyCost:number;upgradeCost:number;description:string};
+export type OperationTask={id:string;title:string;description:string;department:DepartmentId;requiredLevel:number;cost:number;readiness:number;completed:boolean};
 
 export type Career={eventName:string;location:string;eventDate:string;scaleId:ScaleId;budget:number};
 
@@ -24,11 +27,12 @@ export type Transaction={
 };
 
 export type SaveGame={
-  version:3;locale:Locale;career:Career;currentDate:string;cash:number;reputation:number;
-  contacts:Contact[];sponsors:Sponsor[];feed:string[];transactions:Transaction[];milestonesSeen:number[];
+  version:4;locale:Locale;career:Career;currentDate:string;cash:number;reputation:number;
+  contacts:Contact[];sponsors:Sponsor[];departments:Department[];operations:OperationTask[];
+  feed:string[];transactions:Transaction[];milestonesSeen:number[];
 };
 
-export const SAVE_KEY="airshow-manager-save-v3";
+export const SAVE_KEY="airshow-manager-save-v4";
 
 export const scales=[
   {id:"regional" as const,label:"Regionalny AirShow",budget:650000,audience:"do 15 tys. widzów",tone:"Kontrolowany start",description:"Mniejsza skala, prostsza logistyka i większy margines bezpieczeństwa finansowego."},
@@ -50,6 +54,21 @@ export const initialSponsors:Sponsor[]=[
   {id:4,name:"Vistula Motors",industry:"Motoryzacja",tier:"Lokalny",baseOffer:70000,perConfirmedAct:7000,minReputation:6,requirement:"Ekspozycja pojazdów w strefie publiczności i 20 zaproszeń VIP.",status:"prospect",replyAt:null,offer:null,negotiated:false},
 ];
 
+export const initialDepartments:Department[]=[
+  {id:"airOps",name:"Operacje lotnicze",level:1,monthlyCost:18000,upgradeCost:60000,description:"Koordynacja programu, slotów, prób, odpraw i ruchu statków powietrznych."},
+  {id:"safety",name:"Bezpieczeństwo",level:1,monthlyCost:16000,upgradeCost:55000,description:"Strefy bezpieczeństwa, procedury awaryjne i współpraca ze służbami."},
+  {id:"commercial",name:"Komercja",level:1,monthlyCost:13000,upgradeCost:45000,description:"Sponsorzy, partnerstwa, hospitality i rozwój przychodów komercyjnych."},
+  {id:"marketing",name:"Marketing",level:1,monthlyCost:11000,upgradeCost:40000,description:"Komunikacja wydarzenia, kampanie, media i budowanie popytu."},
+];
+
+export const initialOperations:OperationTask[]=[
+  {id:"ops-plan",title:"Plan operacyjny lotniska",description:"Zdefiniuj ruch lotniczy, strefy robocze, procedury i odpowiedzialności.",department:"airOps",requiredLevel:1,cost:18000,readiness:7,completed:false},
+  {id:"display-zone",title:"Zatwierdzenie strefy pokazów",description:"Przygotuj geometrię strefy, punkty odniesienia i wymagane zabezpieczenia.",department:"safety",requiredLevel:2,cost:42000,readiness:10,completed:false},
+  {id:"emergency-plan",title:"Plan reagowania kryzysowego",description:"Uzgodnij procedury z ratownictwem, ochroną, medykami i lotniskiem.",department:"safety",requiredLevel:2,cost:35000,readiness:9,completed:false},
+  {id:"crew-flow",title:"Logistyka załóg i uczestników",description:"Zaplanuj transport, odprawy, dostęp do płyty i obsługę zespołów.",department:"airOps",requiredLevel:2,cost:30000,readiness:8,completed:false},
+];
+
+
 const DAY=86400000;
 export const addDays=(iso:string,days:number)=>new Date(new Date(iso+"T12:00:00").getTime()+days*DAY).toISOString().slice(0,10);
 export const daysBetween=(from:string,to:string)=>Math.max(0,Math.ceil((new Date(to+"T12:00:00").getTime()-new Date(from+"T12:00:00").getTime())/DAY));
@@ -58,15 +77,19 @@ export const money=(n:number)=>new Intl.NumberFormat("pl-PL",{style:"currency",c
 
 export function createGame(career:Career,locale:Locale="pl"):SaveGame{
   const currentDate=addDays(career.eventDate,-332);
-  return {version:3,locale,career,currentDate,cash:career.budget,reputation:12,contacts:initialContacts,sponsors:initialSponsors,feed:["Organizacja została utworzona. Rozpoczyna się pierwszy sezon."],transactions:[{id:"opening",date:currentDate,label:"Budżet startowy organizacji",amount:career.budget,category:"start"}],milestonesSeen:[]};
+  return {version:4,locale,career,currentDate,cash:career.budget,reputation:12,contacts:initialContacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,feed:["Organizacja została utworzona. Rozpoczyna się pierwszy sezon."],transactions:[{id:"opening",date:currentDate,label:"Budżet startowy organizacji",amount:career.budget,category:"start"}],milestonesSeen:[]};
 }
 
 export function saveGame(save:SaveGame){localStorage.setItem(SAVE_KEY,JSON.stringify(save))}
 
+function migrateV3(old:any):SaveGame{
+  return {...old,version:4,departments:old.departments??initialDepartments,operations:old.operations??initialOperations};
+}
+
 function migrateV2(old:any):SaveGame{
   return {
-    version:3,locale:old.locale??"pl",career:old.career,currentDate:old.currentDate,cash:old.cash,reputation:old.reputation??12,
-    contacts:old.contacts??initialContacts,sponsors:initialSponsors,feed:old.feed??[],
+    version:4,locale:old.locale??"pl",career:old.career,currentDate:old.currentDate,cash:old.cash,reputation:old.reputation??12,
+    contacts:old.contacts??initialContacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,feed:old.feed??[],
     transactions:old.transactions??[{id:"migration-v2",date:old.currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash,category:"start"}],
     milestonesSeen:[]
   };
@@ -80,12 +103,14 @@ function migrateV1(old:any):SaveGame{
     id:c.id,name:c.name,country:c.country,aircraft:c.aircraft,fee:c.fee,hotel:c.hotel,fuel:c.fuel,support:c.support,
     status:({Available:"available",Invited:"invited",Interested:"interested",Declined:"declined",Confirmed:"confirmed"} as Record<string,Status>)[c.status]??c.status??"available",replyAt:null
   }));
-  return {version:3,locale:"pl",career:{eventName:old.career?.eventName??"Mój AirShow",location:old.career?.location??"Polska",eventDate,scaleId:scale.id,budget:old.career?.budget??scale.budget},currentDate,cash:old.cash??scale.budget,reputation:12,contacts,sponsors:initialSponsors,feed:old.feed??[],transactions:[{id:"migration-v1",date:currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash??scale.budget,category:"start"}],milestonesSeen:[]};
+  return {version:4,locale:"pl",career:{eventName:old.career?.eventName??"Mój AirShow",location:old.career?.location??"Polska",eventDate,scaleId:scale.id,budget:old.career?.budget??scale.budget},currentDate,cash:old.cash??scale.budget,reputation:12,contacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,feed:old.feed??[],transactions:[{id:"migration-v1",date:currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash??scale.budget,category:"start"}],milestonesSeen:[]};
 }
 
 export function loadGame():SaveGame|null{
   const raw=localStorage.getItem(SAVE_KEY);
   if(raw){try{return JSON.parse(raw) as SaveGame}catch{localStorage.removeItem(SAVE_KEY)}}
+  const v3=localStorage.getItem("airshow-manager-save-v3");
+  if(v3){try{const migrated=migrateV3(JSON.parse(v3));saveGame(migrated);return migrated}catch{}}
   const v2=localStorage.getItem("airshow-manager-save-v2");
   if(v2){try{const migrated=migrateV2(JSON.parse(v2));saveGame(migrated);return migrated}catch{}}
   const v1=localStorage.getItem("airshow-manager-save-v1");
@@ -97,7 +122,9 @@ export const readiness=(save:SaveGame)=>{
   const confirmed=save.contacts.filter(c=>c.status==="confirmed").length;
   const partners=save.sponsors.filter(s=>s.status==="partner").length;
   const budgetHealth=Math.max(0,Math.min(16,Math.round((save.cash/save.career.budget)*16)));
-  return Math.min(100,8+confirmed*9+partners*5+budgetHealth);
+  const operations=save.operations.filter(o=>o.completed).reduce((sum,o)=>sum+o.readiness,0);
+  const team=Math.min(12,save.departments.reduce((sum,d)=>sum+d.level,0));
+  return Math.min(100,4+confirmed*9+partners*5+budgetHealth+operations+team);
 };
 
 export const sponsorOffer=(sponsor:Sponsor,confirmedActs:number)=>sponsor.baseOffer+sponsor.perConfirmedAct*confirmedActs;
@@ -110,3 +137,6 @@ export const seasonMilestones=[
   {days:120,text:"Cztery miesiące do pokazu. Każde opóźnienie będzie od teraz trudniejsze i droższe do odrobienia."},
   {days:60,text:"Ostatnie dwa miesiące. Priorytetem staje się gotowość operacyjna i finalizacja wszystkich zobowiązań."}
 ] as const;
+
+export const monthlyPayroll=(save:SaveGame)=>save.departments.reduce((sum,d)=>sum+d.monthlyCost*d.level,0);
+export const operationReadiness=(save:SaveGame)=>save.operations.filter(o=>o.completed).reduce((sum,o)=>sum+o.readiness,0);
