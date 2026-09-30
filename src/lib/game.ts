@@ -80,6 +80,9 @@ export const initialMarketing:MarketingCampaign[]=[
 
 export const scaleCapacity:Record<ScaleId,number>={regional:15000,national:40000,international:65000};
 
+const isScaleId=(value:unknown):value is ScaleId=>value==="regional"||value==="national"||value==="international";
+const legacyScaleCapacity=(old:any)=>scaleCapacity[isScaleId(old?.career?.scaleId)?old.career.scaleId:"regional"];
+
 
 
 const DAY=86400000;
@@ -96,17 +99,17 @@ export function createGame(career:Career,locale:Locale="pl"):SaveGame{
 export function saveGame(save:SaveGame){localStorage.setItem(SAVE_KEY,JSON.stringify(save))}
 
 function migrateV4(old:any):SaveGame{
-  return {...old,version:5,marketing:old.marketing??initialMarketing,awareness:old.awareness??8,ticketing:old.ticketing??{price:89,capacity:scaleCapacity[old.career.scaleId],sold:0,salesOpened:false}};
+  return {...old,version:5,marketing:old.marketing??initialMarketing,awareness:old.awareness??8,ticketing:old.ticketing??{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}};
 }
 
 function migrateV3(old:any):SaveGame{
-  return {...old,version:5,departments:old.departments??initialDepartments,operations:old.operations??initialOperations,marketing:initialMarketing,awareness:8,ticketing:{price:89,capacity:scaleCapacity[old.career.scaleId],sold:0,salesOpened:false}};
+  return {...old,version:5,departments:old.departments??initialDepartments,operations:old.operations??initialOperations,marketing:initialMarketing,awareness:8,ticketing:{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}};
 }
 
 function migrateV2(old:any):SaveGame{
   return {
     version:5,locale:old.locale??"pl",career:old.career,currentDate:old.currentDate,cash:old.cash,reputation:old.reputation??12,
-    contacts:old.contacts??initialContacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,awareness:8,ticketing:{price:89,capacity:scaleCapacity[old.career.scaleId],sold:0,salesOpened:false},feed:old.feed??[],
+    contacts:old.contacts??initialContacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,awareness:8,ticketing:{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false},feed:old.feed??[],
     transactions:old.transactions??[{id:"migration-v2",date:old.currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash,category:"start"}],
     milestonesSeen:[]
   };
