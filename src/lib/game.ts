@@ -81,7 +81,11 @@ export const initialMarketing:MarketingCampaign[]=[
 export const scaleCapacity:Record<ScaleId,number>={regional:15000,national:40000,international:65000};
 
 const isScaleId=(value:unknown):value is ScaleId=>value==="regional"||value==="national"||value==="international";
-const legacyScaleCapacity=(old:any)=>scaleCapacity[isScaleId(old?.career?.scaleId)?old.career.scaleId:"regional"];
+const legacyScaleCapacity=(old:any)=>{
+  const rawScaleId:unknown=old?.career?.scaleId;
+  const scaleId:ScaleId=isScaleId(rawScaleId)?rawScaleId:"regional";
+  return scaleCapacity[scaleId];
+};
 
 
 
