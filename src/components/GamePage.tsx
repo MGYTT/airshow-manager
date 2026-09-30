@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { ArrowUpRight, BarChart3, Building2, ChevronRight, CircleDollarSign, Handshake, Megaphone, Plane, ShieldCheck, Ticket, Users, X } from "lucide-react";
 import { addDays,daysBetween,formatDate,loadGame,money,readiness,saveGame,type Contact,type SaveGame,type Status } from "../lib/game";
 import { t } from "../lib/i18n";
+import ThemeToggle from "./ThemeToggle";
 import styles from "../app/page.module.css";
 
 const sections=[
@@ -32,7 +33,7 @@ export default function GamePage({section}:{section:string}){
 
  if(!game)return <main className={styles.loading}><Plane size={18}/><span>Wczytywanie centrum operacyjnego…</span></main>;
  return <main className={styles.gameShell}>
-  <aside className={styles.sidebar}><div className={styles.gameBrand}><span className={styles.mark}><Plane size={17}/></span><div><b>AIRSHOW MANAGER</b><small>SEZON 01</small></div></div><nav>{sections.map(([slug,key,Icon])=><button key={slug} onClick={()=>router.push(`/gra/${slug}`)} className={active===slug?styles.navActive:""}><Icon size={16}/><span>{t(game.locale,`nav.${key}` as any)}</span></button>)}</nav><div className={styles.eventChip}><span>AKTYWNE WYDARZENIE</span><b>{game.career.eventName}</b><small>{formatDate(game.career.eventDate)}</small></div></aside>
+  <aside className={styles.sidebar}><div className={styles.gameBrand}><span className={styles.mark}><Plane size={17}/></span><div><b>AIRSHOW MANAGER</b><small>SEZON 01</small></div></div><nav>{sections.map(([slug,key,Icon])=><button key={slug} onClick={()=>router.push(`/gra/${slug}`)} className={active===slug?styles.navActive:""}><Icon size={16}/><span>{t(game.locale,`nav.${key}` as any)}</span></button>)}</nav><div className={styles.sidebarActions}><ThemeToggle/><button type="button" onClick={()=>router.push("/")}>Strona główna</button></div><div className={styles.eventChip}><span>AKTYWNE WYDARZENIE</span><b>{game.career.eventName}</b><small>{formatDate(game.career.eventDate)}</small></div></aside>
   <section className={styles.gameMain}><header className={styles.gameHeader}><div><span>{active==="centrum"?"CENTRUM DOWODZENIA":t(game.locale,`nav.${sections.find(x=>x[0]===active)?.[1]}` as any).toUpperCase()}</span><h1>{game.career.eventName}</h1><p>{game.career.location} · {formatDate(game.career.eventDate)}</p></div><div className={styles.clock}><div><b>{days}</b><span>DNI DO POKAZU</span></div><div><button onClick={()=>advance(1)}>+1 dzień</button><button onClick={()=>advance(7)}>+7 dni</button></div></div></header>
   {active==="centrum"&&<Center game={game}/>}
   {active==="uczestnicy"&&<Participants game={game} invite={invite} open={setSelected}/>}
