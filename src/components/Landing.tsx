@@ -3,10 +3,11 @@ import { useEffect,useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Banknote, CalendarDays, Handshake, Plane, ShieldCheck, Ticket, Users } from "lucide-react";
 import { loadGame } from "../lib/game";
+import ThemeToggle from "./ThemeToggle";
 import styles from "../app/page.module.css";
 
 const systems=[
-  [Plane,"Program lotniczy","Buduj line-up, zapraszaj zespoły i negocjuj warunki udziału."],
+  [Plane,"Program lotniczy","Buduj program, zapraszaj zespoły i negocjuj warunki udziału."],
   [Banknote,"Finanse","Kontroluj płynność, zobowiązania i każdą decyzję kosztową."],
   [Handshake,"Sponsorzy","Pozyskuj partnerów i realizuj świadczenia zapisane w umowach."],
   [ShieldCheck,"Operacje","Spinaj bezpieczeństwo, logistykę, lotnisko i harmonogram."],
@@ -18,7 +19,7 @@ export default function Landing(){
  const router=useRouter(); const [hasSave,setHasSave]=useState(false);
  useEffect(()=>setHasSave(Boolean(loadGame())),[]);
  return <main className={styles.landing}>
-  <header className={styles.siteHeader}><div className={styles.wordmark}><span className={styles.mark}><Plane size={17}/></span><div><b>AIRSHOW MANAGER</b><small>Build. Organize. Deliver.</small></div></div><nav><a href="#systemy">Systemy</a><a href="#sezon">Sezon</a><a href="#centrum">Centrum dowodzenia</a></nav><span className={styles.version}>PRE-ALPHA · 0.2</span></header>
+  <header className={styles.siteHeader}><div className={styles.wordmark}><span className={styles.mark}><Plane size={17}/></span><div><b>AIRSHOW MANAGER</b><small>Build. Organize. Deliver.</small></div></div><nav><a href="#systemy">Systemy</a><a href="#sezon">Sezon</a><a href="#centrum">Centrum dowodzenia</a></nav><div className={styles.headerActions}><span className={styles.version}>PRE-ALPHA · 0.2</span><ThemeToggle/></div></header>
   <section className={styles.hero}>
    <div className={styles.heroCopy}><span className={styles.eyebrow}>PROFESJONALNY SYMULATOR ZARZĄDZANIA AIRSHOW</span><h1>Zbuduj wydarzenie,<br/><em>które działa pod presją.</em></h1><p>Od pierwszego budżetu do ostatniej odprawy przed otwarciem bram. Podejmuj decyzje organizatora i obserwuj ich konsekwencje w całym sezonie.</p><div className={styles.heroActions}><button onClick={()=>router.push("/nowa-kariera")}>Rozpocznij nową karierę <ArrowRight size={16}/></button><button disabled={!hasSave} onClick={()=>hasSave&&router.push("/gra/centrum")}>Kontynuuj sezon <span>{hasSave?"Zapis gotowy":"Brak zapisu"}</span></button></div>
    <div className={styles.heroMeta}><span><b>10–12 mies.</b> przygotowań</span><span><b>9</b> obszarów zarządzania</span><span><b>1</b> dzień, który wszystko weryfikuje</span></div></div>
