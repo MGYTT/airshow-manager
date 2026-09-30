@@ -311,3 +311,29 @@
  .participantRow{grid-template-columns:1fr}
  .participantRow>span:nth-child(4),.participantRow>div:last-child{grid-column:1;grid-row:auto;align-items:flex-start;text-align:left}
 }
+
+/* Sponsors */
+.sponsorSummary{padding:18px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sponsorGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sponsorCard{padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.sponsorCard>header{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+.sponsorCard>header span{color:var(--quiet);font-size:10px;font-weight:700}
+.sponsorCard h3{margin:5px 0 0;font-size:18px;font-weight:700}
+.sponsorCard>header>b{font-size:10px;font-weight:750;white-space:nowrap}
+.sponsor_prospect{color:var(--muted)}.sponsor_contacted{color:var(--warning)}.sponsor_offered{color:var(--accent)}.sponsor_partner{color:var(--success)}.sponsor_declined{color:var(--danger)}
+.sponsorValue{margin:22px 0 16px;padding:15px;border-radius:11px;background:var(--surface-2)}
+.sponsorValue span{display:block;color:var(--quiet);font-size:9px;font-weight:750}
+.sponsorValue strong{display:block;margin-top:5px;font-size:22px;font-weight:720;letter-spacing:-.02em}
+.sponsorCard>p{min-height:44px;margin:0;color:var(--muted);font-size:12px;line-height:1.55}
+.sponsorMeta{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sponsorMeta span{color:var(--quiet);font-size:10px}
+.sponsorMeta b{display:block;margin-top:3px;color:var(--text);font-size:11px}
+.sponsorCard>footer{min-height:38px;margin-top:18px;display:flex;justify-content:flex-end;align-items:center;gap:8px}
+.sponsorCard>footer>span{color:var(--muted);font-size:10px}
+.sponsorCard>footer button{height:38px;padding:0 12px;border:1px solid var(--line-strong);border-radius:9px;background:var(--surface);color:var(--text);font-size:10px;font-weight:700;cursor:pointer}
+.sponsorCard>footer button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.sponsorCard>footer button:disabled{opacity:.5;cursor:not-allowed}
+.sponsorCard>footer .primarySmall{border-color:var(--text);background:var(--text);color:var(--surface)}
+.sponsorCard>footer .primarySmall:hover{border-color:var(--accent);background:var(--accent);color:white}
+@media(max-width:900px){.sponsorGrid{grid-template-columns:1fr}}
+@media(max-width:700px){.sponsorSummary{grid-template-columns:1fr}.sponsorCard{padding:16px}.sponsorCard>header{display:block}.sponsorCard>header>b{display:block;margin-top:8px}.sponsorMeta{grid-template-columns:1fr}.sponsorCard>footer{justify-content:flex-start;flex-wrap:wrap}.sponsorCard>footer button{flex:1;min-width:140px}}
