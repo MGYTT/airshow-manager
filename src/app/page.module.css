@@ -193,7 +193,7 @@
 .participantRow button:hover{border-color:var(--accent);color:var(--accent)}
 .status_available,.status_invited,.status_interested,.status_declined,.status_confirmed{font-size:10px!important;font-weight:750!important}
 .status_available{color:var(--muted)!important}.status_invited{color:var(--warning)!important}.status_interested,.status_confirmed{color:var(--success)!important}.status_declined{color:var(--danger)!important}
-.financeSummary{padding:18px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.financeSummary{padding:18px 0;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .ledger>div{padding:14px 0;display:grid;grid-template-columns:150px 1fr auto;gap:16px;align-items:center;border-top:1px solid var(--line)}
 .ledger span{color:var(--quiet);font-size:10px}.ledger b{font-size:12px;font-weight:650}.ledger strong{font-size:12px}
 .moduleRoadmap{margin-top:20px;display:grid;gap:10px}
