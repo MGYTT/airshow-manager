@@ -370,3 +370,40 @@
 .operationDone>button{color:var(--success)}
 @media(max-width:900px){.departmentGrid{grid-template-columns:1fr}.operationCard,.operationDone{grid-template-columns:90px 1fr}.operationCard>button,.operationDone>button{grid-column:2;justify-self:start}}
 @media(max-width:700px){.teamSummary,.operationsSummary{grid-template-columns:1fr}.departmentCard{padding:16px}.departmentStats{grid-template-columns:1fr}.operationCard,.operationDone{grid-template-columns:1fr;padding:16px}.operationStatus{margin-bottom:-2px}.operationCard>button,.operationDone>button{grid-column:1;width:100%;justify-self:stretch}.operationMeta{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}}
+
+/* Marketing and ticketing */
+.marketingSummary,.ticketSummary{padding:18px 0;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.campaignGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.campaignCard,.campaignDone{padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.campaignDone{background:color-mix(in srgb,var(--success) 6%,var(--surface));border-color:color-mix(in srgb,var(--success) 26%,var(--line))}
+.campaignCard>header,.campaignDone>header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.campaignCard>header span,.campaignDone>header span{color:var(--quiet);font-size:9px;font-weight:750}
+.campaignCard h3,.campaignDone h3{margin:5px 0 0;font-size:18px;font-weight:710}
+.campaignCard>header>b,.campaignDone>header>b{color:var(--accent);font-size:10px;font-weight:780;white-space:nowrap}
+.campaignDone>header>b{color:var(--success)}
+.campaignCard>p,.campaignDone>p{min-height:42px;margin:14px 0 18px;color:var(--muted);font-size:12px;line-height:1.55}
+.campaignMeta{padding-top:14px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.campaignMeta span{color:var(--quiet);font-size:10px}.campaignMeta b{display:block;margin-top:4px;color:var(--text);font-size:12px}
+.campaignCard>footer,.campaignDone>footer{margin-top:18px;display:flex;justify-content:flex-end}
+.campaignCard>footer button,.campaignDone>footer button{height:38px;padding:0 13px;border:1px solid var(--line-strong);border-radius:9px;background:var(--surface);font-size:10px;font-weight:700;cursor:pointer}
+.campaignCard>footer button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.campaignCard>footer button:disabled,.campaignDone>footer button:disabled{opacity:.52;cursor:not-allowed}
+.ticketWorkspace{display:grid;grid-template-columns:.8fr 1.2fr;gap:14px}
+.priceControl{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin:24px 0 16px}
+.priceControl button{height:42px;padding:0 13px;border:1px solid var(--line-strong);border-radius:9px;background:var(--surface);font-size:11px;font-weight:700;cursor:pointer}
+.priceControl button:hover{border-color:var(--accent);color:var(--accent)}
+.priceControl strong{text-align:center;font-size:28px;font-weight:730;letter-spacing:-.03em}
+.ticketWorkspace .surface>p{color:var(--muted);font-size:12px;line-height:1.55}
+.ticketOpen{width:100%;height:42px;margin-top:14px;border:1px solid var(--text);border-radius:10px;background:var(--text);color:var(--surface);font-size:11px;font-weight:750;cursor:pointer}
+.ticketOpen:disabled{opacity:.45;cursor:not-allowed}
+.salesProgress{margin:24px 0}
+.salesProgress>i{height:12px;display:block;overflow:hidden;border-radius:999px;background:var(--surface-3)}
+.salesProgress>i em{height:100%;display:block;border-radius:inherit;background:var(--accent)}
+.salesProgress>div{margin-top:10px;display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
+.salesProgress b{color:var(--text)}
+.salesForecast{display:grid;gap:0;border-top:1px solid var(--line)}
+.salesForecast span{padding:13px 0;display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);color:var(--muted);font-size:11px}
+.salesForecast b{color:var(--text);font-weight:680}
+@media(max-width:1000px){.campaignGrid,.ticketWorkspace{grid-template-columns:1fr}}
+@media(max-width:700px){.marketingSummary,.ticketSummary{grid-template-columns:1fr 1fr}.campaignCard,.campaignDone{padding:16px}.campaignCard>header,.campaignDone>header{display:block}.campaignCard>header>b,.campaignDone>header>b{display:block;margin-top:8px}.campaignMeta{grid-template-columns:1fr}.priceControl{grid-template-columns:1fr 1fr}.priceControl strong{grid-column:1/-1;grid-row:1}.salesProgress>div,.salesForecast span{align-items:flex-start;flex-direction:column;gap:4px}}
+@media(max-width:430px){.marketingSummary,.ticketSummary{grid-template-columns:1fr}}
