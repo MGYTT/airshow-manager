@@ -7,6 +7,8 @@ export type ScaleId="regional"|"national"|"international";
 export type DepartmentId="airOps"|"safety"|"commercial"|"marketing";
 export type Department={id:DepartmentId;name:string;level:number;monthlyCost:number;upgradeCost:number;description:string};
 export type OperationTask={id:string;title:string;description:string;department:DepartmentId;requiredLevel:number;cost:number;readiness:number;completed:boolean};
+export type MarketingCampaign={id:string;name:string;description:string;cost:number;awareness:number;requiredLevel:number;completed:boolean};
+export type Ticketing={price:number;capacity:number;sold:number;salesOpened:boolean};
 
 export type Career={eventName:string;location:string;eventDate:string;scaleId:ScaleId;budget:number};
 
@@ -23,16 +25,17 @@ export type Sponsor={
 
 export type Transaction={
   id:string;date:string;label:string;amount:number;
-  category:"start"|"participant"|"operations"|"sponsor"|"ticketing";
+  category:"start"|"participant"|"operations"|"sponsor"|"ticketing"|"marketing";
 };
 
 export type SaveGame={
-  version:4;locale:Locale;career:Career;currentDate:string;cash:number;reputation:number;
+  version:5;locale:Locale;career:Career;currentDate:string;cash:number;reputation:number;
   contacts:Contact[];sponsors:Sponsor[];departments:Department[];operations:OperationTask[];
+  marketing:MarketingCampaign[];awareness:number;ticketing:Ticketing;
   feed:string[];transactions:Transaction[];milestonesSeen:number[];
 };
 
-export const SAVE_KEY="airshow-manager-save-v4";
+export const SAVE_KEY="airshow-manager-save-v5";
 
 export const scales=[
   {id:"regional" as const,label:"Regionalny AirShow",budget:650000,audience:"do 15 tys. widzów",tone:"Kontrolowany start",description:"Mniejsza skala, prostsza logistyka i większy margines bezpieczeństwa finansowego."},
@@ -68,6 +71,16 @@ export const initialOperations:OperationTask[]=[
   {id:"crew-flow",title:"Logistyka załóg i uczestników",description:"Zaplanuj transport, odprawy, dostęp do płyty i obsługę zespołów.",department:"airOps",requiredLevel:2,cost:30000,readiness:8,completed:false},
 ];
 
+export const initialMarketing:MarketingCampaign[]=[
+  {id:"social",name:"Kampania social media",description:"Regularna komunikacja, krótkie formaty wideo i promocja potwierdzonych uczestników.",cost:18000,awareness:12,requiredLevel:1,completed:false},
+  {id:"aviation-media",name:"Media lotnicze",description:"Partnerstwa z portalami i twórcami specjalizującymi się w lotnictwie.",cost:32000,awareness:15,requiredLevel:1,completed:false},
+  {id:"regional",name:"Kampania regionalna",description:"Outdoor, radio i media lokalne w regionie wydarzenia.",cost:45000,awareness:20,requiredLevel:2,completed:false},
+  {id:"national",name:"Kampania ogólnopolska",description:"Szeroka kampania wizerunkowa przed kluczową fazą sprzedaży.",cost:110000,awareness:28,requiredLevel:3,completed:false},
+];
+
+export const scaleCapacity:Record<ScaleId,number>={regional:15000,national:40000,international:65000};
+
+
 
 const DAY=86400000;
 export const addDays=(iso:string,days:number)=>new Date(new Date(iso+"T12:00:00").getTime()+days*DAY).toISOString().slice(0,10);
@@ -77,19 +90,23 @@ export const money=(n:number)=>new Intl.NumberFormat("pl-PL",{style:"currency",c
 
 export function createGame(career:Career,locale:Locale="pl"):SaveGame{
   const currentDate=addDays(career.eventDate,-332);
-  return {version:4,locale,career,currentDate,cash:career.budget,reputation:12,contacts:initialContacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,feed:["Organizacja została utworzona. Rozpoczyna się pierwszy sezon."],transactions:[{id:"opening",date:currentDate,label:"Budżet startowy organizacji",amount:career.budget,category:"start"}],milestonesSeen:[]};
+  return {version:5,locale,career,currentDate,cash:career.budget,reputation:12,contacts:initialContacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,awareness:8,ticketing:{price:89,capacity:scaleCapacity[career.scaleId],sold:0,salesOpened:false},feed:["Organizacja została utworzona. Rozpoczyna się pierwszy sezon."],transactions:[{id:"opening",date:currentDate,label:"Budżet startowy organizacji",amount:career.budget,category:"start"}],milestonesSeen:[]};
 }
 
 export function saveGame(save:SaveGame){localStorage.setItem(SAVE_KEY,JSON.stringify(save))}
 
+function migrateV4(old:any):SaveGame{
+  return {...old,version:5,marketing:old.marketing??initialMarketing,awareness:old.awareness??8,ticketing:old.ticketing??{price:89,capacity:scaleCapacity[old.career.scaleId],sold:0,salesOpened:false}};
+}
+
 function migrateV3(old:any):SaveGame{
-  return {...old,version:4,departments:old.departments??initialDepartments,operations:old.operations??initialOperations};
+  return {...old,version:5,departments:old.departments??initialDepartments,operations:old.operations??initialOperations,marketing:initialMarketing,awareness:8,ticketing:{price:89,capacity:scaleCapacity[old.career.scaleId],sold:0,salesOpened:false}};
 }
 
 function migrateV2(old:any):SaveGame{
   return {
-    version:4,locale:old.locale??"pl",career:old.career,currentDate:old.currentDate,cash:old.cash,reputation:old.reputation??12,
-    contacts:old.contacts??initialContacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,feed:old.feed??[],
+    version:5,locale:old.locale??"pl",career:old.career,currentDate:old.currentDate,cash:old.cash,reputation:old.reputation??12,
+    contacts:old.contacts??initialContacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,awareness:8,ticketing:{price:89,capacity:scaleCapacity[old.career.scaleId],sold:0,salesOpened:false},feed:old.feed??[],
     transactions:old.transactions??[{id:"migration-v2",date:old.currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash,category:"start"}],
     milestonesSeen:[]
   };
@@ -103,12 +120,14 @@ function migrateV1(old:any):SaveGame{
     id:c.id,name:c.name,country:c.country,aircraft:c.aircraft,fee:c.fee,hotel:c.hotel,fuel:c.fuel,support:c.support,
     status:({Available:"available",Invited:"invited",Interested:"interested",Declined:"declined",Confirmed:"confirmed"} as Record<string,Status>)[c.status]??c.status??"available",replyAt:null
   }));
-  return {version:4,locale:"pl",career:{eventName:old.career?.eventName??"Mój AirShow",location:old.career?.location??"Polska",eventDate,scaleId:scale.id,budget:old.career?.budget??scale.budget},currentDate,cash:old.cash??scale.budget,reputation:12,contacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,feed:old.feed??[],transactions:[{id:"migration-v1",date:currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash??scale.budget,category:"start"}],milestonesSeen:[]};
+  return {version:5,locale:"pl",career:{eventName:old.career?.eventName??"Mój AirShow",location:old.career?.location??"Polska",eventDate,scaleId:scale.id,budget:old.career?.budget??scale.budget},currentDate,cash:old.cash??scale.budget,reputation:12,contacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,awareness:8,ticketing:{price:89,capacity:scaleCapacity[scale.id],sold:0,salesOpened:false},feed:old.feed??[],transactions:[{id:"migration-v1",date:currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash??scale.budget,category:"start"}],milestonesSeen:[]};
 }
 
 export function loadGame():SaveGame|null{
   const raw=localStorage.getItem(SAVE_KEY);
   if(raw){try{return JSON.parse(raw) as SaveGame}catch{localStorage.removeItem(SAVE_KEY)}}
+  const v4=localStorage.getItem("airshow-manager-save-v4");
+  if(v4){try{const migrated=migrateV4(JSON.parse(v4));saveGame(migrated);return migrated}catch{}}
   const v3=localStorage.getItem("airshow-manager-save-v3");
   if(v3){try{const migrated=migrateV3(JSON.parse(v3));saveGame(migrated);return migrated}catch{}}
   const v2=localStorage.getItem("airshow-manager-save-v2");
@@ -140,3 +159,16 @@ export const seasonMilestones=[
 
 export const monthlyPayroll=(save:SaveGame)=>save.departments.reduce((sum,d)=>sum+d.monthlyCost*d.level,0);
 export const operationReadiness=(save:SaveGame)=>save.operations.filter(o=>o.completed).reduce((sum,o)=>sum+o.readiness,0);
+
+
+export const ticketDemandPerDay=(save:SaveGame)=>{
+  if(!save.ticketing.salesOpened)return 0;
+  const confirmed=save.contacts.filter(c=>c.status==="confirmed").length;
+  const marketingLevel=save.departments.find(d=>d.id==="marketing")?.level??1;
+  const days=daysBetween(save.currentDate,save.career.eventDate);
+  const base=Math.max(20,save.ticketing.capacity/220);
+  const attractiveness=.38+confirmed*.18+(save.awareness/100)*.75+(save.reputation/100)*.45+marketingLevel*.06;
+  const priceFactor=Math.max(.42,Math.min(1.4,89/save.ticketing.price));
+  const urgency=days<=30?1.8:days<=90?1.42:days<=180?1.18:1;
+  return Math.max(0,Math.round(base*attractiveness*priceFactor*urgency));
+};
