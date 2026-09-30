@@ -1,28 +1,40 @@
 # AirShow Manager
 
-A professional airshow management game.
+**AirShow Manager** to profesjonalny symulator zarządzania pokazami lotniczymi. Gracz prowadzi organizację od pierwszych decyzji około 10–12 miesięcy przed wydarzeniem aż do dnia pokazów.
 
-## Vision
+## Aktualny kierunek — 0.2
 
-AirShow Manager puts the player in charge of organizing an airshow from the first planning decisions to event day.
+Projekt został przebudowany na osobne warstwy odpowiedzialne za interfejs, logikę gry, zapis oraz lokalizację.
 
-The game is planned around:
+- pełny polski interfejs jako język domyślny
+- fundament lokalizacji przygotowany pod kolejne języki
+- osobne trasy dla kreatora kariery i modułów gry
+- automatyczny zapis rozgrywki w przeglądarce
+- migracja zapisu z wcześniejszej wersji
+- rzeczywista data sezonu i countdown do wydarzenia
+- zaproszenia uczestników zależne od czasu gry
+- kontrakty uczestników obciążające budżet
+- rejestr transakcji i podstawowy moduł finansowy
+- dynamiczna gotowość i ryzyko budżetowe
+- nowy spójny system wizualny dla landing page, kreatora i gry
 
-- career progression and organizer reputation
-- budgets, revenue and cash flow
-- staff and departments
-- aircraft and display team invitations
-- sponsors and commercial partnerships
-- ticketing and marketing
-- infrastructure and ground operations
-- safety, security and event readiness
-- scheduling and air operations
-- dynamic events, weather and cancellations
-- event day simulation
-- post-event reports and future seasons
+## Główne moduły
 
-## Development
+Centrum dowodzenia, Operacje, Uczestnicy, Sponsorzy, Zespół, Infrastruktura, Bilety, Marketing i Finanse.
 
-AirShow Manager is developed as a standalone project, separate from AirShow Gallery.
+Aktywnie działają obecnie fundament sezonu, centrum dowodzenia, czas gry, uczestnicy, kontrakty oraz podstawowe finanse. Pozostałe moduły mają własne trasy i strukturę przygotowaną pod kolejne mechaniki.
 
-Initial milestone: **AirShow Manager 0.1 — Career foundation and Operations Dashboard**.
+## Architektura
+
+- `src/components/Landing.tsx` — strona główna produktu
+- `src/components/CareerSetup.tsx` — kreator nowej kariery
+- `src/components/GamePage.tsx` — powłoka gry i aktualne moduły
+- `src/lib/game.ts` — model zapisu, daty, dane i logika domenowa
+- `src/lib/i18n.ts` — fundament tłumaczeń
+- `src/app/page.module.css` — wspólny system wizualny aplikacji
+
+## Stack
+
+Next.js 16, React 19, TypeScript i Lucide React.
+
+AirShow Manager jest niezależnym projektem rozwijanym osobno od AirShow Gallery.
