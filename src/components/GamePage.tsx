@@ -53,7 +53,8 @@ export default function GamePage({section}:{section:string}){
   {active==="centrum"&&<Center game={game}/>}
   {active==="uczestnicy"&&<Participants game={game} invite={invite} open={setSelected}/>}
   {active==="finanse"&&<Finance game={game}/>}
-  {!["centrum","uczestnicy","finanse"].includes(active)&&<Module section={active}/>}
+  {active==="sponsorzy"&&<Sponsors game={game} contact={contactSponsor} negotiate={negotiateSponsor} accept={acceptSponsor}/>}
+  {!["centrum","uczestnicy","finanse","sponsorzy"].includes(active)&&<Module section={active}/>}
   </section>
   {selected&&<Contract contact={game.contacts.find(c=>c.id===selected)!} cash={game.cash} close={()=>setSelected(null)} sign={sign}/>}
  </main>
