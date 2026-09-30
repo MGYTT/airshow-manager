@@ -337,3 +337,36 @@
 .sponsorCard>footer .primarySmall:hover{border-color:var(--accent);background:var(--accent);color:white}
 @media(max-width:900px){.sponsorGrid{grid-template-columns:1fr}}
 @media(max-width:700px){.sponsorSummary{grid-template-columns:1fr}.sponsorCard{padding:16px}.sponsorCard>header{display:block}.sponsorCard>header>b{display:block;margin-top:8px}.sponsorMeta{grid-template-columns:1fr}.sponsorCard>footer{justify-content:flex-start;flex-wrap:wrap}.sponsorCard>footer button{flex:1;min-width:140px}}
+
+/* Team and operations */
+.teamSummary,.operationsSummary{padding:18px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.departmentGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.departmentCard{padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.departmentCard>header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.departmentCard>header span{color:var(--quiet);font-size:9px;font-weight:750}
+.departmentCard h3{margin:5px 0 0;font-size:18px;font-weight:710}
+.departmentCard>header>b{color:var(--accent);font-size:10px;font-weight:750;white-space:nowrap}
+.departmentCard>p{min-height:42px;margin:14px 0 18px;color:var(--muted);font-size:12px;line-height:1.55}
+.levelTrack{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.levelTrack i{height:7px;border-radius:999px;background:var(--surface-3)}
+.levelTrack i.levelOn{background:var(--accent)}
+.departmentStats{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.departmentStats span{color:var(--quiet);font-size:10px}
+.departmentStats b{display:block;margin-top:4px;color:var(--text);font-size:12px}
+.departmentCard>footer{margin-top:18px;display:flex;justify-content:flex-end}
+.departmentCard>footer button,.operationCard>button,.operationDone>button{height:38px;padding:0 13px;border:1px solid var(--line-strong);border-radius:9px;background:var(--surface);color:var(--text);font-size:10px;font-weight:700;cursor:pointer}
+.departmentCard>footer button:hover:not(:disabled),.operationCard>button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.departmentCard>footer button:disabled,.operationCard>button:disabled,.operationDone>button:disabled{opacity:.52;cursor:not-allowed}
+.operationList{display:grid;gap:10px}
+.operationCard,.operationDone{padding:18px;display:grid;grid-template-columns:110px 1fr auto;gap:18px;align-items:center;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.operationDone{background:color-mix(in srgb,var(--success) 6%,var(--surface));border-color:color-mix(in srgb,var(--success) 28%,var(--line))}
+.operationStatus{font-size:9px;font-weight:800;color:var(--warning)}
+.operationDone .operationStatus{color:var(--success)}
+.operationCard h3,.operationDone h3{margin:0;font-size:15px;font-weight:710}
+.operationCard p,.operationDone p{margin:6px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+.operationMeta{margin-top:13px;display:flex;gap:18px;flex-wrap:wrap}
+.operationMeta span{color:var(--quiet);font-size:9px}
+.operationMeta b{color:var(--text)}
+.operationDone>button{color:var(--success)}
+@media(max-width:900px){.departmentGrid{grid-template-columns:1fr}.operationCard,.operationDone{grid-template-columns:90px 1fr}.operationCard>button,.operationDone>button{grid-column:2;justify-self:start}}
+@media(max-width:700px){.teamSummary,.operationsSummary{grid-template-columns:1fr}.departmentCard{padding:16px}.departmentStats{grid-template-columns:1fr}.operationCard,.operationDone{grid-template-columns:1fr;padding:16px}.operationStatus{margin-bottom:-2px}.operationCard>button,.operationDone>button{grid-column:1;width:100%;justify-self:stretch}.operationMeta{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}}
