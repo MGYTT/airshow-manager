@@ -575,3 +575,28 @@
 .sponsorOfferMeta b{font-size:10px}
 @media(max-width:1000px){.sponsorSummary{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.sponsorOfferMeta{grid-template-columns:1fr}}
+
+.ticketTierGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.ticketTierCard{border:1px solid var(--line);background:var(--surface);padding:20px;border-radius:14px}
+.ticketTierCard>header{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.ticketTierCard>header span{font-size:9px;font-weight:800;letter-spacing:.1em;color:var(--quiet)}
+.ticketTierCard h3{margin:5px 0 0;font-size:18px}
+.ticketTierCard>header>b{font-size:9px;letter-spacing:.1em}
+.ticketTierPrice{display:grid;grid-template-columns:40px 1fr 40px;gap:8px;align-items:center;margin:20px 0}
+.ticketTierPrice button{height:38px;border:1px solid var(--line-strong);background:var(--surface-2);color:var(--text);font-size:18px;cursor:pointer;border-radius:8px}
+.ticketTierPrice button:hover{border-color:var(--accent);color:var(--accent)}
+.ticketTierPrice strong{text-align:center;font-size:24px}
+.ticketTierProgress>i{display:block;height:9px;border-radius:999px;background:var(--surface-3);overflow:hidden}
+.ticketTierProgress>i em{display:block;height:100%;background:var(--accent)}
+.ticketTierProgress>span{display:block;margin-top:8px;color:var(--muted);font-size:10px}
+.ticketTierProgress b{color:var(--text)}
+.ticketTierStats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);margin-top:16px;border:1px solid var(--line)}
+.ticketTierStats span{display:flex;flex-direction:column;gap:4px;background:var(--surface-2);padding:10px;color:var(--quiet);font-size:9px}
+.ticketTierStats b{color:var(--text);font-size:12px}
+.ticketTierToggle{width:100%;height:36px;margin-top:14px;border:1px solid var(--line-strong);background:transparent;color:var(--text);font-size:10px;font-weight:700;cursor:pointer;border-radius:8px}
+.ticketTierToggle:hover{border-color:var(--accent);color:var(--accent)}
+.ticketStrategyText{min-height:86px}
+.ticketSalesLive{margin-top:18px;padding:16px;border:1px solid var(--line);background:var(--surface-2);display:flex;flex-direction:column;gap:6px}
+.ticketSalesLive span{font-size:9px;font-weight:900;letter-spacing:.12em;color:var(--accent)}
+.ticketSalesLive b{font-size:14px}.ticketSalesLive small{color:var(--muted);line-height:1.5}
+@media(max-width:1000px){.ticketTierGrid{grid-template-columns:1fr}}
