@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { ArrowUpRight, BarChart3, Building2, ChevronRight, CircleDollarSign, Clock3, CloudSun, Handshake, Megaphone, Plane, ShieldCheck, Ticket, Trophy, Users, X } from "lucide-react";
 import { addDays,advanceEventDay,contactUnlocked,daysBetween,defaultParticipantLogistics,eventDayChecks,eventWeatherForecast,flightProgramIssues,flightProgramReady,flightSlotEnd,formatDate,loadGame,logisticsReadiness,money,monthlyPayroll,negotiateParticipantOffer,negotiateSponsorOffer,nextIncident,nextSeasonBudget,operationReadiness,participantBaseTotal,participantLogisticsIssues,participantLogisticsReady,participantNegotiationRisk,readiness,resolveEventDayIssue,commandDeadlines,commandRisks,forecastCashAtEvent,departmentWorkload,effectiveDepartmentLevel,staffPayroll,saveGame,scales,seasonMilestones,sortedFlightProgram,sponsorCommitmentProgress,sponsorConflict,sponsorNegotiationRisk,sponsorOffer,sponsorPenalty,startEventDaySimulation,startNextSeason,ticketDemandByTier,ticketDemandPerDay,ticketRevenuePotential,totalSponsorPenalty,projectedAttendance,unlockedContactCount,weatherAt,weatherIssuesForSlot,weatherLimitsFor,weatherRiskLevel,reputationLabel,reputationValue,withReputationDelta,type Contact,type Department,type InfrastructureProject,type MarketingCampaign,type ParticipantLogistics,type SaveGame,type ScaleId,type Sponsor,type StaffMember,type Status,type TicketTierId } from "../lib/game";
 import { t } from "../lib/i18n";
+import { claimLegacyLocalSave,loadCloudSave,loadUserCache,saveCloudGame,saveUserCache } from "../lib/cloudSave";
+import { useAuth } from "./AuthProvider";
 import ThemeToggle from "./ThemeToggle";
 import styles from "../app/page.module.css";
 
@@ -21,12 +23,49 @@ const modules:Record<string,{eyebrow:string;title:string;description:string;item
 };
 
 export default function GamePage({section}:{section:string}){
- const router=useRouter(); const [game,setGame]=useState<SaveGame|null>(null); const [selected,setSelected]=useState<number|null>(null);
- useEffect(()=>{const g=loadGame();if(!g){router.replace("/nowa-kariera");return}setGame(g)},[router]);
- useEffect(()=>{if(game)saveGame(game)},[game]);
+ const router=useRouter(); const {user,loading:authLoading,configured}=useAuth(); const [game,setGame]=useState<SaveGame|null>(null); const [selected,setSelected]=useState<number|null>(null); const [cloudReady,setCloudReady]=useState(false); const [syncState,setSyncState]=useState<"local"|"syncing"|"synced"|"error">("local");
+ const active=sections.some(x=>x[0]===section)?section:"centrum";
+ useEffect(()=>{
+   if(authLoading)return;
+   if(configured&&!user){router.replace(`/auth?next=${encodeURIComponent("/gra/"+active)}`);return}
+   let cancelled=false;
+   (async()=>{
+     if(configured&&user){
+       setSyncState("syncing");
+       try{
+         const cloud=await loadCloudSave(user.id);
+         let chosen=cloud.game??loadUserCache(user.id);
+         if(!chosen){
+           const legacy=loadGame();
+           chosen=claimLegacyLocalSave(user.id,legacy);
+           if(chosen)await saveCloudGame(user.id,chosen);
+         }
+         if(!chosen){router.replace("/nowa-kariera");return}
+         if(!cancelled){saveUserCache(user.id,chosen);saveGame(chosen);setGame(chosen);setCloudReady(true);setSyncState("synced")}
+       }catch{
+         const fallback=loadUserCache(user.id)??loadGame();
+         if(fallback&&!cancelled){setGame(fallback);setCloudReady(true);setSyncState("error")}
+         else router.replace("/nowa-kariera");
+       }
+       return;
+     }
+     const local=loadGame();
+     if(!local){router.replace("/nowa-kariera");return}
+     if(!cancelled){setGame(local);setCloudReady(true);setSyncState("local")}
+   })();
+   return()=>{cancelled=true};
+ },[authLoading,user,configured,router,active]);
+ useEffect(()=>{
+   if(!game||!cloudReady)return;
+   saveGame(game);
+   if(!configured||!user)return;
+   saveUserCache(user.id,game);
+   setSyncState("syncing");
+   const timer=window.setTimeout(()=>{saveCloudGame(user.id,game).then(()=>setSyncState("synced")).catch(()=>setSyncState("error"))},650);
+   return()=>window.clearTimeout(timer);
+ },[game,cloudReady,user,configured]);
  const days=game?daysBetween(game.currentDate,game.career.eventDate):0;
  const confirmed=game?.contacts.filter(c=>c.status==="confirmed").length??0;
- const active=sections.some(x=>x[0]===section)?section:"centrum";
  const advance=(amount:number)=>setGame(current=>{if(!current)return current;if(current.activeIncident)return {...current,feed:["Najpierw rozwiąż aktywne zdarzenie sezonowe.",...current.feed].slice(0,10)};
   const remaining=daysBetween(current.currentDate,current.career.eventDate);
   const nextDate=addDays(current.currentDate,Math.min(amount,remaining));
@@ -89,7 +128,7 @@ export default function GamePage({section}:{section:string}){
 
  if(!game)return <main className={styles.loading}><Plane size={18}/><span>Wczytywanie centrum operacyjnego…</span></main>;
  return <main className={styles.gameShell}>
-  <aside className={styles.sidebar}><div className={styles.gameBrand}><span className={styles.mark}><Plane size={18}/></span><div><b>AIRSHOW <em>MANAGER</em></b><small>PLAN · COORDINATE · DELIVER</small></div></div><div className={styles.seasonBadge}><span>SEZON</span><b>{String(game.season).padStart(2,"0")}</b><small>{game.career.scaleId.toUpperCase()}</small></div><nav>{sections.map(([slug,key,Icon])=><button key={slug} onClick={()=>router.push(`/gra/${slug}`)} className={active===slug?styles.navActive:""}><span className={styles.navIcon}><Icon size={17}/></span><span>{t(game.locale,`nav.${key}` as any)}</span></button>)}</nav><div className={styles.eventChip}><span>AKTYWNE WYDARZENIE</span><b>{game.career.eventName}</b><small>{game.career.location}</small><i>{formatDate(game.career.eventDate)}</i></div><div className={styles.sidebarActions}><ThemeToggle/><button type="button" onClick={()=>router.push("/")}>Strona główna</button></div></aside>
+  <aside className={styles.sidebar}><div className={styles.gameBrand}><span className={styles.mark}><Plane size={18}/></span><div><b>AIRSHOW <em>MANAGER</em></b><small>PLAN · COORDINATE · DELIVER</small></div></div><div className={styles.seasonBadge}><span>SEZON</span><b>{String(game.season).padStart(2,"0")}</b><small>{game.career.scaleId.toUpperCase()}</small></div><nav>{sections.map(([slug,key,Icon])=><button key={slug} onClick={()=>router.push(`/gra/${slug}`)} className={active===slug?styles.navActive:""}><span className={styles.navIcon}><Icon size={17}/></span><span>{t(game.locale,`nav.${key}` as any)}</span></button>)}</nav><div className={styles.eventChip}><span>AKTYWNE WYDARZENIE</span><b>{game.career.eventName}</b><small>{game.career.location}</small><i>{formatDate(game.career.eventDate)}</i></div><div className={styles.sidebarSync}><span>{syncState==="synced"?"CHMURA":syncState==="syncing"?"SYNCHRONIZACJA":syncState==="error"?"OFFLINE":"LOKALNIE"}</span><b className={syncState==="error"?styles.warn:styles.good}>{syncState==="synced"?"ZAPISANO":syncState==="syncing"?"...":syncState==="error"?"BŁĄD":"OK"}</b></div><div className={styles.sidebarActions}><ThemeToggle/><button type="button" onClick={()=>router.push(user?"/konto":"/auth")}>{user?"Moje konto":"Zaloguj"}</button><button type="button" onClick={()=>router.push("/")}>Start</button></div></aside>
   <section className={styles.gameMain}><header className={styles.gameHeader}><div className={styles.headerIdentity}><span>{active==="centrum"?"CENTRUM DOWODZENIA":t(game.locale,`nav.${sections.find(x=>x[0]===active)?.[1]}` as any).toUpperCase()}</span><h1>{game.career.eventName}</h1><p>{game.career.location} · {formatDate(game.career.eventDate)}</p></div><div className={styles.headerRight}><div className={styles.headerMetrics}><span><small>GOTOWOŚĆ</small><b>{readiness(game)}%</b></span><span><small>REPUTACJA</small><b>{game.reputation}</b></span><span><small>SALDO</small><b>{money(game.cash)}</b></span></div><div className={styles.clock}><div><b>{days}</b><span>DNI DO POKAZU</span></div><div><button onClick={()=>advance(1)}>+1 dzień</button><button onClick={()=>advance(7)}>+7 dni</button></div></div></div></header>
   {active==="centrum"&&<Center game={game}/>}
   {active==="uczestnicy"&&<Participants game={game} invite={invite} open={setSelected}/>}
