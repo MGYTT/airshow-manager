@@ -17,7 +17,7 @@ export type Career={eventName:string;location:string;eventDate:string;scaleId:Sc
 
 export type Contact={
   id:number;name:string;country:string;aircraft:string;fee:number;hotel:number;fuel:number;support:number;
-  status:Status;replyAt:string|null;minReputation:number;minSeason:number;tier:"Regional"|"National"|"International";
+  status:Status;replyAt:string|null;offerExpiresAt:string|null;negotiationRound:number;agreedDiscount:number;minReputation:number;minSeason:number;tier:"Regional"|"National"|"International";
 };
 
 export type Sponsor={
@@ -32,13 +32,13 @@ export type Transaction={
 };
 
 export type SaveGame={
-  version:9;locale:Locale;season:number;career:Career;currentDate:string;cash:number;reputation:number;
+  version:10;locale:Locale;season:number;career:Career;currentDate:string;cash:number;reputation:number;
   contacts:Contact[];sponsors:Sponsor[];departments:Department[];operations:OperationTask[];
   marketing:MarketingCampaign[];infrastructure:InfrastructureProject[];awareness:number;ticketing:Ticketing;
   feed:string[];transactions:Transaction[];milestonesSeen:number[];eventResult:EventResult|null;seasonHistory:SeasonRecord[];
 };
 
-export const SAVE_KEY="airshow-manager-save-v9";
+export const SAVE_KEY="airshow-manager-save-v10";
 
 export const scales=[
   {id:"regional" as const,label:"Regionalny AirShow",budget:650000,audience:"do 15 tys. widzów",tone:"Kontrolowany start",description:"Mniejsza skala, prostsza logistyka i większy margines bezpieczeństwa finansowego."},
@@ -47,16 +47,16 @@ export const scales=[
 ];
 
 export const initialContacts:Contact[]=[
-  {id:1,name:"Falcon Demo Team",country:"Polska",aircraft:"F-16",fee:85000,hotel:12000,fuel:18000,support:7000,status:"available",replyAt:null,minReputation:0,minSeason:1,tier:"Regional"},
-  {id:2,name:"Baltic Jet Team",country:"Litwa",aircraft:"L-39 × 6",fee:145000,hotel:26000,fuel:32000,support:14000,status:"available",replyAt:null,minReputation:0,minSeason:1,tier:"Regional"},
-  {id:3,name:"Heritage Flight",country:"Wielka Brytania",aircraft:"Spitfire",fee:62000,hotel:9000,fuel:11000,support:6000,status:"available",replyAt:null,minReputation:0,minSeason:1,tier:"Regional"},
-  {id:4,name:"Alpine Solo Display",country:"Szwajcaria",aircraft:"F/A-18",fee:110000,hotel:14000,fuel:24000,support:9000,status:"available",replyAt:null,minReputation:0,minSeason:1,tier:"Regional"},
-  {id:5,name:"Nordic Thunder",country:"Finlandia",aircraft:"F/A-18",fee:175000,hotel:18000,fuel:30000,support:12000,status:"available",replyAt:null,minReputation:18,minSeason:2,tier:"National"},
-  {id:6,name:"Viper Tactical Demo",country:"Belgia",aircraft:"F-16",fee:190000,hotel:20000,fuel:34000,support:14000,status:"available",replyAt:null,minReputation:22,minSeason:2,tier:"National"},
-  {id:7,name:"Atlantic Aerobatic Team",country:"Francja",aircraft:"Alpha Jet × 8",fee:260000,hotel:42000,fuel:52000,support:24000,status:"available",replyAt:null,minReputation:28,minSeason:2,tier:"National"},
-  {id:8,name:"Typhoon Performance Flight",country:"Wielka Brytania",aircraft:"Typhoon",fee:235000,hotel:22000,fuel:44000,support:18000,status:"available",replyAt:null,minReputation:34,minSeason:3,tier:"International"},
-  {id:9,name:"Mediterranean Formation Team",country:"Włochy",aircraft:"MB-339 × 9",fee:340000,hotel:52000,fuel:68000,support:30000,status:"available",replyAt:null,minReputation:42,minSeason:3,tier:"International"},
-  {id:10,name:"Transatlantic Heavy Demo",country:"USA",aircraft:"F-15EX",fee:390000,hotel:48000,fuel:82000,support:36000,status:"available",replyAt:null,minReputation:50,minSeason:4,tier:"International"}
+  {id:1,name:"Falcon Demo Team",country:"Polska",aircraft:"F-16",fee:85000,hotel:12000,fuel:18000,support:7000,status:"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0,minReputation:0,minSeason:1,tier:"Regional"},
+  {id:2,name:"Baltic Jet Team",country:"Litwa",aircraft:"L-39 × 6",fee:145000,hotel:26000,fuel:32000,support:14000,status:"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0,minReputation:0,minSeason:1,tier:"Regional"},
+  {id:3,name:"Heritage Flight",country:"Wielka Brytania",aircraft:"Spitfire",fee:62000,hotel:9000,fuel:11000,support:6000,status:"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0,minReputation:0,minSeason:1,tier:"Regional"},
+  {id:4,name:"Alpine Solo Display",country:"Szwajcaria",aircraft:"F/A-18",fee:110000,hotel:14000,fuel:24000,support:9000,status:"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0,minReputation:0,minSeason:1,tier:"Regional"},
+  {id:5,name:"Nordic Thunder",country:"Finlandia",aircraft:"F/A-18",fee:175000,hotel:18000,fuel:30000,support:12000,status:"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0,minReputation:18,minSeason:2,tier:"National"},
+  {id:6,name:"Viper Tactical Demo",country:"Belgia",aircraft:"F-16",fee:190000,hotel:20000,fuel:34000,support:14000,status:"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0,minReputation:22,minSeason:2,tier:"National"},
+  {id:7,name:"Atlantic Aerobatic Team",country:"Francja",aircraft:"Alpha Jet × 8",fee:260000,hotel:42000,fuel:52000,support:24000,status:"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0,minReputation:28,minSeason:2,tier:"National"},
+  {id:8,name:"Typhoon Performance Flight",country:"Wielka Brytania",aircraft:"Typhoon",fee:235000,hotel:22000,fuel:44000,support:18000,status:"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0,minReputation:34,minSeason:3,tier:"International"},
+  {id:9,name:"Mediterranean Formation Team",country:"Włochy",aircraft:"MB-339 × 9",fee:340000,hotel:52000,fuel:68000,support:30000,status:"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0,minReputation:42,minSeason:3,tier:"International"},
+  {id:10,name:"Transatlantic Heavy Demo",country:"USA",aircraft:"F-15EX",fee:390000,hotel:48000,fuel:82000,support:36000,status:"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0,minReputation:50,minSeason:4,tier:"International"}
 ];
 
 export const initialSponsors:Sponsor[]=[
@@ -113,43 +113,47 @@ export const money=(n:number)=>new Intl.NumberFormat("pl-PL",{style:"currency",c
 
 export function createGame(career:Career,locale:Locale="pl"):SaveGame{
   const currentDate=addDays(career.eventDate,-332);
-  return {version:9,locale,season:1,career,currentDate,cash:career.budget,reputation:12,contacts:initialContacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:89,capacity:scaleCapacity[career.scaleId],sold:0,salesOpened:false},feed:["Organizacja została utworzona. Rozpoczyna się pierwszy sezon."],transactions:[{id:"opening",date:currentDate,label:"Budżet startowy organizacji",amount:career.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[]};
+  return {version:10,locale,season:1,career,currentDate,cash:career.budget,reputation:12,contacts:initialContacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:89,capacity:scaleCapacity[career.scaleId],sold:0,salesOpened:false},feed:["Organizacja została utworzona. Rozpoczyna się pierwszy sezon."],transactions:[{id:"opening",date:currentDate,label:"Budżet startowy organizacji",amount:career.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[]};
 }
 
 export function saveGame(save:SaveGame){localStorage.setItem(SAVE_KEY,JSON.stringify(save))}
 
 const hydrateContacts=(existing:any[]=[])=>initialContacts.map(base=>{
   const old=existing.find(c=>c?.id===base.id);
-  return old?{...base,...old,minReputation:base.minReputation,minSeason:base.minSeason,tier:base.tier}:({...base});
+  return old?{...base,...old,offerExpiresAt:old.offerExpiresAt??null,negotiationRound:old.negotiationRound??0,agreedDiscount:old.agreedDiscount??0,minReputation:base.minReputation,minSeason:base.minSeason,tier:base.tier}:({...base});
 });
 
+function migrateV9(old:any):SaveGame{
+  return {...old,version:10,contacts:hydrateContacts(old.contacts)};
+}
+
 function migrateV8(old:any):SaveGame{
-  return {...old,version:9,contacts:hydrateContacts(old.contacts)};
+  return {...old,version:10,contacts:hydrateContacts(old.contacts)};
 }
 
 function migrateV7(old:any):SaveGame{
-  return {...old,version:9,season:old.season??1,contacts:hydrateContacts(old.contacts),seasonHistory:old.seasonHistory??[]};
+  return {...old,version:10,season:old.season??1,contacts:hydrateContacts(old.contacts),seasonHistory:old.seasonHistory??[]};
 }
 
 function migrateV6(old:any):SaveGame{
-  return {...old,version:9,season:old.season??1,contacts:hydrateContacts(old.contacts),eventResult:old.eventResult??null,seasonHistory:old.seasonHistory??[]};
+  return {...old,version:10,season:old.season??1,contacts:hydrateContacts(old.contacts),eventResult:old.eventResult??null,seasonHistory:old.seasonHistory??[]};
 }
 
 function migrateV5(old:any):SaveGame{
-  return {...old,version:9,season:old.season??1,contacts:hydrateContacts(old.contacts),infrastructure:old.infrastructure??initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[]};
+  return {...old,version:10,season:old.season??1,contacts:hydrateContacts(old.contacts),infrastructure:old.infrastructure??initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[]};
 }
 
 function migrateV4(old:any):SaveGame{
-  return {...old,version:9,season:old.season??1,contacts:hydrateContacts(old.contacts),marketing:old.marketing??initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:old.awareness??8,ticketing:old.ticketing??{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}};
+  return {...old,version:10,season:old.season??1,contacts:hydrateContacts(old.contacts),marketing:old.marketing??initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:old.awareness??8,ticketing:old.ticketing??{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}};
 }
 
 function migrateV3(old:any):SaveGame{
-  return {...old,version:9,season:old.season??1,contacts:hydrateContacts(old.contacts),departments:old.departments??initialDepartments,operations:old.operations??initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:8,ticketing:{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}};
+  return {...old,version:10,season:old.season??1,contacts:hydrateContacts(old.contacts),departments:old.departments??initialDepartments,operations:old.operations??initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:8,ticketing:{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}};
 }
 
 function migrateV2(old:any):SaveGame{
   return {
-    version:9,locale:old.locale??"pl",season:old.season??1,career:old.career,currentDate:old.currentDate,cash:old.cash,reputation:old.reputation??12,
+    version:10,locale:old.locale??"pl",season:old.season??1,career:old.career,currentDate:old.currentDate,cash:old.cash,reputation:old.reputation??12,
     contacts:old.contacts??initialContacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false},feed:old.feed??[],
     transactions:old.transactions??[{id:"migration-v2",date:old.currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash,category:"start"}],
     milestonesSeen:[],eventResult:null,seasonHistory:old.seasonHistory??[]
@@ -162,14 +166,16 @@ function migrateV1(old:any):SaveGame{
   const currentDate=addDays(eventDate,-Number(old.days??332));
   const contacts:Contact[]=(old.contacts??initialContacts).map((c:any)=>({
     ...initialContacts.find(base=>base.id===c.id)!,id:c.id,name:c.name,country:c.country,aircraft:c.aircraft,fee:c.fee,hotel:c.hotel,fuel:c.fuel,support:c.support,
-    status:({Available:"available",Invited:"invited",Interested:"interested",Declined:"declined",Confirmed:"confirmed"} as Record<string,Status>)[c.status]??c.status??"available",replyAt:null
+    status:({Available:"available",Invited:"invited",Interested:"interested",Declined:"declined",Confirmed:"confirmed"} as Record<string,Status>)[c.status]??c.status??"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0
   }));
-  return {version:9,locale:"pl",season:1,career:{eventName:old.career?.eventName??"Mój AirShow",location:old.career?.location??"Polska",eventDate,scaleId:scale.id,budget:old.career?.budget??scale.budget},currentDate,cash:old.cash??scale.budget,reputation:12,contacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:89,capacity:scaleCapacity[scale.id],sold:0,salesOpened:false},feed:old.feed??[],transactions:[{id:"migration-v1",date:currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash??scale.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[]};
+  return {version:10,locale:"pl",season:1,career:{eventName:old.career?.eventName??"Mój AirShow",location:old.career?.location??"Polska",eventDate,scaleId:scale.id,budget:old.career?.budget??scale.budget},currentDate,cash:old.cash??scale.budget,reputation:12,contacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:89,capacity:scaleCapacity[scale.id],sold:0,salesOpened:false},feed:old.feed??[],transactions:[{id:"migration-v1",date:currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash??scale.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[]};
 }
 
 export function loadGame():SaveGame|null{
   const raw=localStorage.getItem(SAVE_KEY);
   if(raw){try{return JSON.parse(raw) as SaveGame}catch{localStorage.removeItem(SAVE_KEY)}}
+  const v9=localStorage.getItem("airshow-manager-save-v9");
+  if(v9){try{const migrated=migrateV9(JSON.parse(v9));saveGame(migrated);return migrated}catch{}}
   const v8=localStorage.getItem("airshow-manager-save-v8");
   if(v8){try{const migrated=migrateV8(JSON.parse(v8));saveGame(migrated);return migrated}catch{}}
   const v7=localStorage.getItem("airshow-manager-save-v7");
@@ -252,7 +258,7 @@ export const calculateEventResult=(save:SaveGame):EventResult=>{
 };
 
 
-const resetContacts=()=>initialContacts.map(c=>({...c,status:"available" as Status,replyAt:null}));
+const resetContacts=()=>initialContacts.map(c=>({...c,status:"available" as Status,replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0}));
 const resetSponsors=()=>initialSponsors.map(s=>({...s,status:"prospect" as SponsorStatus,replyAt:null,offer:null,negotiated:false}));
 const resetOperations=()=>initialOperations.map(o=>({...o,completed:false}));
 const resetInfrastructure=()=>initialInfrastructure.map(i=>({...i,completed:false}));
@@ -273,7 +279,7 @@ export const startNextSeason=(save:SaveGame,scaleId:ScaleId):SaveGame=>{
   const career:Career={...save.career,eventDate:nextEventDate,scaleId,budget:budget.total};
   const currentDate=addDays(nextEventDate,-332);
   return {
-    ...save,version:9,season:save.season+1,career,currentDate,cash:budget.total,
+    ...save,version:10,season:save.season+1,career,currentDate,cash:budget.total,
     reputation:save.reputation,contacts:resetContacts(),sponsors:resetSponsors(),
     operations:resetOperations(),infrastructure:resetInfrastructure(),marketing:resetMarketing(),
     awareness:Math.max(8,Math.round(save.awareness*.45)),
