@@ -673,3 +673,28 @@
 .logisticsEmpty{margin:0;padding:26px;color:var(--muted);font-size:12px}
 @media(max-width:1050px){.logisticsGrid{grid-template-columns:1fr}.logisticsSummary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.logisticsSummary{grid-template-columns:1fr}.logisticsSchedule{grid-template-columns:1fr}.logisticsCheckDone,.logisticsCheckOpen{grid-template-columns:28px 1fr}.logisticsCheckDone>strong,.logisticsCheckOpen>strong{grid-column:2}}
+
+.weatherSummary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:18px}
+.weatherForecast{border:1px solid var(--line);background:var(--surface);margin-bottom:18px}
+.weatherCards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line)}
+.weatherCards article{background:var(--surface-2);padding:16px;display:flex;flex-direction:column;gap:10px}
+.weatherCards article>span{font-size:10px;font-weight:900;letter-spacing:.1em;color:var(--accent)}
+.weatherCards article>strong{font-size:24px}
+.weatherCards article>div{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.weatherCards article>div b{font-size:11px}.weatherCards article>div small{font-size:8px;color:var(--quiet);text-transform:uppercase;letter-spacing:.06em}
+.weatherCards article>em{font-style:normal;font-size:9px;color:var(--muted);padding-top:7px;border-top:1px solid var(--line)}
+.weatherSlots{display:grid}
+.weatherSlotOk,.weatherSlotRisk{display:grid;grid-template-columns:70px minmax(190px,1.3fr) repeat(3,minmax(100px,.7fr)) minmax(180px,1fr);gap:14px;align-items:center;padding:14px 18px;border-top:1px solid var(--line)}
+.weatherSlotOk>span,.weatherSlotRisk>span{font-size:12px;font-weight:900}
+.weatherSlotOk>div:nth-child(2),.weatherSlotRisk>div:nth-child(2){display:flex;flex-direction:column;gap:3px}
+.weatherSlotOk>div:nth-child(2) small,.weatherSlotRisk>div:nth-child(2) small{color:var(--muted);font-size:9px}
+.weatherSlotOk>div:not(:nth-child(2)),.weatherSlotRisk>div:not(:nth-child(2)){display:flex;flex-direction:column;gap:3px}
+.weatherSlotOk>div small,.weatherSlotRisk>div small{font-size:8px;color:var(--quiet);text-transform:uppercase;letter-spacing:.06em}
+.weatherSlotOk>div b,.weatherSlotRisk>div b{font-size:10px}
+.weatherSlotOk>strong,.weatherSlotRisk>strong{font-size:8px;line-height:1.45;letter-spacing:.05em}
+.weatherSlotOk>strong{color:var(--success)}
+.weatherSlotRisk{background:color-mix(in srgb,var(--warning) 5%,var(--surface))}
+.weatherSlotRisk>strong{color:var(--warning)}
+@media(max-width:1100px){.weatherCards{grid-template-columns:repeat(3,minmax(0,1fr))}.weatherSlotOk,.weatherSlotRisk{grid-template-columns:70px 1fr 1fr 1fr}.weatherSlotOk>strong,.weatherSlotRisk>strong{grid-column:2/-1}}
+@media(max-width:760px){.weatherSummary{grid-template-columns:repeat(2,minmax(0,1fr))}.weatherCards{grid-template-columns:1fr}.weatherSlotOk,.weatherSlotRisk{grid-template-columns:60px 1fr}.weatherSlotOk>div:not(:nth-child(2)),.weatherSlotRisk>div:not(:nth-child(2)),.weatherSlotOk>strong,.weatherSlotRisk>strong{grid-column:2}}
+@media(max-width:520px){.weatherSummary{grid-template-columns:1fr}}
