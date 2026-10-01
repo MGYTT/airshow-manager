@@ -257,6 +257,7 @@ export const eventDayChecks=(save:SaveGame)=>{
   return [
     {id:"date",label:"Nadszedł dzień wydarzenia",passed:daysBetween(save.currentDate,save.career.eventDate)===0,detail:"Przesuń czas do daty AirShow."},
     {id:"program",label:"Minimum 2 potwierdzonych uczestników",passed:confirmed>=2,detail:`${confirmed}/2 potwierdzonych`},
+    {id:"flight-program",label:"Program lotniczy bez konfliktów",passed:flightProgramReady(save),detail:flightProgramReady(save)?"Wszyscy potwierdzeni uczestnicy mają poprawne sloty.":flightProgramIssues(save)[0]??"Ułóż kompletny program pokazów."},
     {id:"operations",label:"Kluczowe procedury operacyjne",passed:criticalOps.every(id=>save.operations.find(o=>o.id===id)?.completed),detail:"Plan lotniska, strefa pokazów i plan kryzysowy."},
     {id:"infrastructure",label:"Krytyczna infrastruktura gotowa",passed:criticalInfra.every(id=>save.infrastructure.find(i=>i.id===id)?.completed),detail:"Płyta, strefa publiczności i drogi ratownicze."},
     {id:"safety",label:"Bezpieczeństwo na poziomie 2+",passed:safetyLevel>=2,detail:`Aktualny poziom: ${safetyLevel}`}
