@@ -74,9 +74,11 @@ export default function GamePage({section}:{section:string}){
   {active==="sponsorzy"&&<Sponsors game={game} contact={contactSponsor} negotiate={negotiateSponsor} accept={acceptSponsor}/>}
   {active==="zespol"&&<Team game={game} upgrade={upgradeDepartment}/>}
   {active==="operacje"&&<Operations game={game} complete={completeOperation}/>}
+  {active==="infrastruktura"&&<Infrastructure game={game} build={buildInfrastructure}/>}
   {active==="marketing"&&<Marketing game={game} run={runCampaign}/>}
   {active==="bilety"&&<Tickets game={game} open={openTicketSales} adjust={adjustTicketPrice}/>}
-  {!["centrum","uczestnicy","finanse","sponsorzy","zespol","operacje","infrastruktura","marketing","bilety"].includes(active)&&<Module section={active}/>}
+  {active==="event-day"&&<EventDay game={game} run={runEventDay}/>}
+  {!["centrum","uczestnicy","finanse","sponsorzy","zespol","operacje","infrastruktura","marketing","bilety","event-day"].includes(active)&&<Module section={active}/>}
   </section>
   {selected&&<Contract contact={game.contacts.find(c=>c.id===selected)!} cash={game.cash} close={()=>setSelected(null)} sign={sign}/>}
  </main>
