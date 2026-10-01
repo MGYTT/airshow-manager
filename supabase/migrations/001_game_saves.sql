@@ -10,22 +10,21 @@ alter table public.game_saves enable row level security;
 drop policy if exists "Users can read own game save" on public.game_saves;
 create policy "Users can read own game save"
 on public.game_saves for select
-using (auth.uid() = user_id);
+using ((select auth.uid()) = user_id);
 
 drop policy if exists "Users can insert own game save" on public.game_saves;
 create policy "Users can insert own game save"
 on public.game_saves for insert
-with check (auth.uid() = user_id);
+with check ((select auth.uid()) = user_id);
 
 drop policy if exists "Users can update own game save" on public.game_saves;
 create policy "Users can update own game save"
 on public.game_saves for update
-using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
 
 drop policy if exists "Users can delete own game save" on public.game_saves;
 create policy "Users can delete own game save"
 on public.game_saves for delete
-using (auth.uid() = user_id);
+using ((select auth.uid()) = user_id);
 
-create index if not exists game_saves_updated_at_idx on public.game_saves(updated_at desc);
