@@ -165,7 +165,7 @@ const hydrateTicketing=(old:any):Ticketing=>{
 };
 
 function migrateV14(old:any):SaveGame{
-  return {...old,version:15,ticketing:hydrateTicketing(old.ticketing),ticketing:hydrateTicketing(old.ticketing)};
+  return {...old,version:15,ticketing:hydrateTicketing(old.ticketing)};
 }
 
 function migrateV13(old:any):SaveGame{
@@ -205,11 +205,11 @@ function migrateV5(old:any):SaveGame{
 }
 
 function migrateV4(old:any):SaveGame{
-  return {...old,version:15,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null},marketing:old.marketing??initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:old.awareness??8,ticketing:old.ticketing??{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}};
+  return {...old,version:15,ticketing:hydrateTicketing(old.ticketing??{price:99,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null},marketing:old.marketing??initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:old.awareness??8};
 }
 
 function migrateV3(old:any):SaveGame{
-  return {...old,version:15,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null},departments:old.departments??initialDepartments,operations:old.operations??initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:8,ticketing:{price:99,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false,tiers:createTicketTiers(legacyScaleCapacity(old))}};
+  return {...old,version:15,ticketing:hydrateTicketing(old.ticketing??{price:99,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null},departments:old.departments??initialDepartments,operations:old.operations??initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:8};
 }
 
 function migrateV2(old:any):SaveGame{
