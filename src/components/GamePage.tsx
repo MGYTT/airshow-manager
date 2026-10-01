@@ -98,7 +98,7 @@ export default function GamePage({section}:{section:string}){
   {active==="operacje"&&<Operations game={game} complete={completeOperation}/>}  {active==="program"&&<FlightProgram game={game} add={addToFlightProgram} update={updateFlightSlot} remove={removeFlightSlot}/>}
   {active==="infrastruktura"&&<Infrastructure game={game} build={buildInfrastructure}/>}
   {active==="marketing"&&<Marketing game={game} run={runCampaign}/>}
-  {active==="bilety"&&<Tickets game={game} open={openTicketSales} adjust={adjustTicketPrice}/>}
+  {active==="bilety"&&<Tickets game={game} open={openTicketSales} adjust={adjustTicketPrice} toggle={toggleTicketTier}/>}
   {active==="event-day"&&<EventDay game={game} run={runEventDay} step={stepEventDay} decide={decideEventDay} nextSeason={beginNextSeason}/>}
   {!["centrum","uczestnicy","finanse","sponsorzy","zespol","operacje","program","infrastruktura","marketing","bilety","event-day"].includes(active)&&<Module section={active}/>}
   </section>
