@@ -90,7 +90,7 @@ export default function GamePage({section}:{section:string}){
   {active==="infrastruktura"&&<Infrastructure game={game} build={buildInfrastructure}/>}
   {active==="marketing"&&<Marketing game={game} run={runCampaign}/>}
   {active==="bilety"&&<Tickets game={game} open={openTicketSales} adjust={adjustTicketPrice}/>}
-  {active==="event-day"&&<EventDay game={game} run={runEventDay} nextSeason={beginNextSeason}/>}
+  {active==="event-day"&&<EventDay game={game} run={runEventDay} step={stepEventDay} decide={decideEventDay} nextSeason={beginNextSeason}/>}
   {!["centrum","uczestnicy","finanse","sponsorzy","zespol","operacje","program","infrastruktura","marketing","bilety","event-day"].includes(active)&&<Module section={active}/>}
   </section>
   {selected&&<Contract game={game} contact={game.contacts.find(c=>c.id===selected)!} close={()=>setSelected(null)} sign={sign} negotiate={negotiateParticipant}/>}
