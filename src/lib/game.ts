@@ -178,7 +178,7 @@ const hydrateTicketing=(old:any):Ticketing=>{
   return {price:Number(old?.price)||99,capacity,sold:legacySold,salesOpened:Boolean(old?.salesOpened),tiers:migrated};
 };
 
-const defaultParticipantLogistics=(contactId:number,eventDate:string):ParticipantLogistics=>({
+export const defaultParticipantLogistics=(contactId:number,eventDate:string):ParticipantLogistics=>({
   contactId,
   arrivalDate:addDays(eventDate,-2),
   arrivalTime:"12:00",
@@ -321,7 +321,8 @@ export const readiness=(save:SaveGame)=>{
   const infrastructure=save.infrastructure.filter(i=>i.completed).reduce((sum,i)=>sum+i.readiness,0);
   const team=Math.min(12,save.departments.reduce((sum,d)=>sum+d.level,0));
   const staff=organizationStaffScore(save);
-  return Math.max(0,Math.min(100,4+confirmed*9+partners*5+budgetHealth+operations+infrastructure+team+staff+save.crisisReadiness));
+  const logistics=confirmed>0?Math.round(logisticsReadiness(save)/100*8):0;
+  return Math.max(0,Math.min(100,4+confirmed*9+partners*5+budgetHealth+operations+infrastructure+team+staff+logistics+save.crisisReadiness));
 };
 
 export const sponsorOffer=(sponsor:Sponsor,confirmedActs:number)=>sponsor.baseOffer+sponsor.perConfirmedAct*confirmedActs;
@@ -560,6 +561,17 @@ const issueForSlot=(save:SaveGame,slot:FlightSlot,index:number):EventDayIssue|nu
   if((slot.contactId+save.season+index)%3!==0)return null;
   const contact=save.contacts.find(c=>c.id===slot.contactId);
   if(!contact)return null;
+  const logisticsIssues=participantLogisticsIssues(save,slot.contactId);
+  if(logisticsIssues.length>0)return {
+    id:`event-logistics-${save.season}-${slot.id}`,
+    title:"Problem logistyczny uczestnika",
+    description:`${contact.name}: ${logisticsIssues.slice(0,2).join(" · ")}. Zespół nie jest w pełni przygotowany do slotu.`,
+    slotId:slot.id,
+    choices:[
+      {id:"a",label:"Uruchom obsługę awaryjną",description:"Mobilizujesz zespół operacyjny i ratujesz pokaz kosztem dużego opóźnienia.",delay:20,score:-3,cancel:false,reputation:-1},
+      {id:"b",label:"Odwołaj pokaz",description:"Chronisz resztę harmonogramu, ale tracisz występ i reputację.",delay:0,score:-10,cancel:true,reputation:-2}
+    ]
+  };
   const variants=[
     {title:"Opóźnienie techniczne",description:`${contact.name} zgłasza potrzebę dodatkowej kontroli przed startem.`,choices:[
       {id:"a" as const,label:"Daj zespołowi 15 minut",description:"Bezpieczna decyzja, ale program łapie opóźnienie.",delay:15,score:1,cancel:false,reputation:1},
@@ -687,6 +699,8 @@ export const commandRisks=(save:SaveGame):CommandRisk[]=>{
   const programIssues=flightProgramIssues(save);
   if(confirmed<2)risks.push({id:"program",severity:days<=120?"high":"medium",title:"Program lotniczy jest zbyt słaby",detail:`${confirmed}/2 wymaganych uczestników potwierdzonych.`});
   if(programIssues.length>0&&confirmed>=2)risks.push({id:"flight",severity:days<=60?"high":"medium",title:"Program lotniczy wymaga korekty",detail:programIssues[0]});
+  const logistics=logisticsReadiness(save);
+  if(confirmed>0&&logistics<100)risks.push({id:"logistics",severity:days<=30?"high":"medium",title:"Niepełna logistyka uczestników",detail:`Gotowość logistyczna: ${logistics}%.`});
   if(forecast<0)risks.push({id:"cash",severity:"high",title:"Prognozowany deficyt budżetu",detail:`Prognoza na Event Day: ${money(forecast)}.`});
   else if(forecast<save.career.budget*.15)risks.push({id:"cash",severity:"medium",title:"Niska rezerwa finansowa",detail:`Prognozowane saldo na Event Day: ${money(forecast)}.`});
   if(sponsorRisk>0)risks.push({id:"sponsor",severity:days<=45?"high":"medium",title:"Ryzyko kar sponsorskich",detail:`Przewidywane kary: ${money(sponsorRisk)}.`});
