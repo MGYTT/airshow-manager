@@ -1140,5 +1140,5 @@
   .kpi{min-height:104px}
 }
 @media(prefers-reduced-motion:reduce){
-  *,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+  .gameShell,.gameShell *,.landing,.landing *,.setup,.setup *{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
