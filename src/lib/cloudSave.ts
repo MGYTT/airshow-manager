@@ -35,16 +35,22 @@ export async function deleteCloudGame(userId:string){
 const userCacheKey=(userId:string)=>`${SAVE_KEY}:user:${userId}`;
 const LEGACY_OWNER_KEY="airshow-manager-legacy-save-owner";
 
-export function loadUserCache(userId:string):SaveGame|null{
-  if(typeof window==="undefined")return null;
+export function loadUserCacheInfo(userId:string):CloudSaveInfo{
+  if(typeof window==="undefined")return {game:null,updatedAt:null};
   const raw=localStorage.getItem(userCacheKey(userId));
-  if(!raw)return null;
-  try{return migrateSaveData(JSON.parse(raw))}catch{return null}
+  if(!raw)return {game:null,updatedAt:null};
+  try{
+    const parsed=JSON.parse(raw);
+    if(parsed?.game)return {game:migrateSaveData(parsed.game),updatedAt:parsed.updatedAt??null};
+    return {game:migrateSaveData(parsed),updatedAt:null};
+  }catch{return {game:null,updatedAt:null}}
 }
 
-export function saveUserCache(userId:string,game:SaveGame){
+export function loadUserCache(userId:string):SaveGame|null{return loadUserCacheInfo(userId).game}
+
+export function saveUserCache(userId:string,game:SaveGame,updatedAt=new Date().toISOString()){
   if(typeof window==="undefined")return;
-  localStorage.setItem(userCacheKey(userId),JSON.stringify(game));
+  localStorage.setItem(userCacheKey(userId),JSON.stringify({game,updatedAt}));
 }
 
 export function claimLegacyLocalSave(userId:string,legacy:SaveGame|null):SaveGame|null{
