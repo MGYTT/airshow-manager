@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { ArrowUpRight, BarChart3, Building2, ChevronRight, CircleDollarSign, Clock3, CloudSun, Handshake, Megaphone, Plane, ShieldCheck, Ticket, Trophy, Users, X } from "lucide-react";
 import { addDays,advanceEventDay,contactUnlocked,daysBetween,defaultParticipantLogistics,eventDayChecks,eventWeatherForecast,flightProgramIssues,flightProgramReady,flightSlotEnd,formatDate,loadGame,logisticsReadiness,money,monthlyPayroll,negotiateParticipantOffer,negotiateSponsorOffer,nextIncident,nextSeasonBudget,operationReadiness,participantBaseTotal,participantLogisticsIssues,participantLogisticsReady,participantNegotiationRisk,readiness,resolveEventDayIssue,commandDeadlines,commandRisks,forecastCashAtEvent,departmentWorkload,effectiveDepartmentLevel,staffPayroll,saveGame,scales,seasonMilestones,sortedFlightProgram,sponsorCommitmentProgress,sponsorConflict,sponsorNegotiationRisk,sponsorOffer,sponsorPenalty,startEventDaySimulation,startNextSeason,ticketDemandByTier,ticketDemandPerDay,ticketRevenuePotential,totalSponsorPenalty,projectedAttendance,unlockedContactCount,weatherAt,weatherIssuesForSlot,weatherLimitsFor,weatherRiskLevel,reputationLabel,reputationValue,withReputationDelta,type Contact,type Department,type InfrastructureProject,type MarketingCampaign,type ParticipantLogistics,type SaveGame,type ScaleId,type Sponsor,type StaffMember,type Status,type TicketTierId } from "../lib/game";
 import { t } from "../lib/i18n";
-import { claimLegacyLocalSave,loadCloudSave,loadUserCache,saveCloudGame,saveUserCache } from "../lib/cloudSave";
+import { claimLegacyLocalSave,loadCloudSave,loadUserCache,loadUserCacheInfo,saveCloudGame,saveUserCache } from "../lib/cloudSave";
 import { useAuth } from "./AuthProvider";
 import ThemeToggle from "./ThemeToggle";
 import styles from "../app/page.module.css";
@@ -33,15 +33,20 @@ export default function GamePage({section}:{section:string}){
      if(configured&&user){
        setSyncState("syncing");
        try{
-         const cloud=await loadCloudSave(user.id);
-         let chosen=cloud.game??loadUserCache(user.id);
+         const [cloud,cache]=await Promise.all([loadCloudSave(user.id),Promise.resolve(loadUserCacheInfo(user.id))]);
+         let chosen:SaveGame|null=null;
+         if(cloud.game&&cache.game){
+           const cloudTime=cloud.updatedAt?Date.parse(cloud.updatedAt):0;
+           const cacheTime=cache.updatedAt?Date.parse(cache.updatedAt):0;
+           chosen=cacheTime>cloudTime?cache.game:cloud.game;
+         }else chosen=cloud.game??cache.game;
          if(!chosen){
            const legacy=loadGame();
            chosen=claimLegacyLocalSave(user.id,legacy);
            if(chosen)await saveCloudGame(user.id,chosen);
-         }
+         }else if(cache.game===chosen&&cloud.game!==chosen)await saveCloudGame(user.id,chosen);
          if(!chosen){router.replace("/nowa-kariera");return}
-         if(!cancelled){saveUserCache(user.id,chosen);saveGame(chosen);setGame(chosen);setCloudReady(true);setSyncState("synced")}
+         if(!cancelled){saveUserCache(user.id,chosen,cloud.game===chosen&&cloud.updatedAt?cloud.updatedAt:undefined);saveGame(chosen);setGame(chosen);setCloudReady(true);setSyncState("synced")}
        }catch{
          const fallback=loadUserCache(user.id)??loadGame();
          if(fallback&&!cancelled){setGame(fallback);setCloudReady(true);setSyncState("error")}
