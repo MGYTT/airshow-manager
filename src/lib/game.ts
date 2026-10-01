@@ -21,6 +21,8 @@ export type IncidentChoice={id:"a"|"b";label:string;description:string;effect:In
 export type Incident={id:string;kind:"crisis"|"opportunity";title:string;description:string;triggerDays:number;choices:[IncidentChoice,IncidentChoice]};
 export type FlightSlot={id:string;contactId:number;start:string;duration:number;buffer:number};
 export type ParticipantLogistics={contactId:number;arrivalDate:string;arrivalTime:string;hotelBooked:boolean;transportReady:boolean;fuelReady:boolean;groundSupportReady:boolean;trainingDate:string;trainingTime:string};
+export type WeatherCondition={time:string;windKts:number;visibilityKm:number;cloudBaseFt:number;precipitation:"none"|"light"|"moderate";temperatureC:number};
+export type WeatherLimits={maxWindKts:number;minVisibilityKm:number;minCloudBaseFt:number};
 export type EventDayIssueChoice={id:"a"|"b";label:string;description:string;delay:number;score:number;cancel:boolean;reputation:number};
 export type EventDayIssue={id:string;title:string;description:string;slotId:string;choices:[EventDayIssueChoice,EventDayIssueChoice]};
 export type EventDayState={status:"idle"|"running"|"completed";currentIndex:number;delay:number;scoreModifier:number;completedSlotIds:string[];canceledSlotIds:string[];log:string[];pendingIssue:EventDayIssue|null};
@@ -558,9 +560,19 @@ export const startEventDaySimulation=(save:SaveGame):SaveGame=>{
 };
 
 const issueForSlot=(save:SaveGame,slot:FlightSlot,index:number):EventDayIssue|null=>{
-  if((slot.contactId+save.season+index)%3!==0)return null;
   const contact=save.contacts.find(c=>c.id===slot.contactId);
   if(!contact)return null;
+  const weatherIssues=weatherIssuesForSlot(save,contact,slot.start);
+  if(weatherIssues.length>0)return {
+    id:`event-weather-${save.season}-${slot.id}`,
+    title:"Warunki poniżej minimów pokazu",
+    description:`${contact.name}: ${weatherIssues.join(" · ")}.`,
+    slotId:slot.id,
+    choices:[
+      {id:"a",label:"Wstrzymaj slot 20 minut",description:"Czekasz na poprawę warunków i próbujesz zachować pokaz w programie.",delay:20,score:-1,cancel:false,reputation:0},
+      {id:"b",label:"Odwołaj pokaz",description:"Chronisz bezpieczeństwo i dalszy harmonogram kosztem programu.",delay:0,score:-9,cancel:true,reputation:-1}
+    ]
+  };
   const logisticsIssues=participantLogisticsIssues(save,slot.contactId);
   if(logisticsIssues.length>0)return {
     id:`event-logistics-${save.season}-${slot.id}`,
@@ -572,6 +584,7 @@ const issueForSlot=(save:SaveGame,slot:FlightSlot,index:number):EventDayIssue|nu
       {id:"b",label:"Odwołaj pokaz",description:"Chronisz resztę harmonogramu, ale tracisz występ i reputację.",delay:0,score:-10,cancel:true,reputation:-2}
     ]
   };
+  if((slot.contactId+save.season+index)%3!==0)return null;
   const variants=[
     {title:"Opóźnienie techniczne",description:`${contact.name} zgłasza potrzebę dodatkowej kontroli przed startem.`,choices:[
       {id:"a" as const,label:"Daj zespołowi 15 minut",description:"Bezpieczna decyzja, ale program łapie opóźnienie.",delay:15,score:1,cancel:false,reputation:1},
@@ -701,6 +714,8 @@ export const commandRisks=(save:SaveGame):CommandRisk[]=>{
   if(programIssues.length>0&&confirmed>=2)risks.push({id:"flight",severity:days<=60?"high":"medium",title:"Program lotniczy wymaga korekty",detail:programIssues[0]});
   const logistics=logisticsReadiness(save);
   if(confirmed>0&&logistics<100)risks.push({id:"logistics",severity:days<=30?"high":"medium",title:"Niepełna logistyka uczestników",detail:`Gotowość logistyczna: ${logistics}%.`});
+  const weatherRisk=weatherRiskLevel(save);
+  if(save.flightProgram.length>0&&weatherRisk!=="low")risks.push({id:"weather",severity:weatherRisk,title:"Ryzyko pogodowe dla programu",detail:"Co najmniej jeden slot przekracza minima pogodowe uczestnika."});
   if(forecast<0)risks.push({id:"cash",severity:"high",title:"Prognozowany deficyt budżetu",detail:`Prognoza na Event Day: ${money(forecast)}.`});
   else if(forecast<save.career.budget*.15)risks.push({id:"cash",severity:"medium",title:"Niska rezerwa finansowa",detail:`Prognozowane saldo na Event Day: ${money(forecast)}.`});
   if(sponsorRisk>0)risks.push({id:"sponsor",severity:days<=45?"high":"medium",title:"Ryzyko kar sponsorskich",detail:`Przewidywane kary: ${money(sponsorRisk)}.`});
@@ -750,4 +765,55 @@ export const logisticsReadiness=(save:SaveGame)=>{
   if(!confirmed.length)return 0;
   const ready=confirmed.filter(c=>participantLogisticsReady(save,c.id)).length;
   return Math.round(ready/confirmed.length*100);
+};
+
+
+const weatherSeed=(save:SaveGame,time:string)=>{
+  const raw=`${save.career.eventDate}-${save.season}-${time}`;
+  let hash=0;
+  for(let i=0;i<raw.length;i++)hash=(hash*31+raw.charCodeAt(i))>>>0;
+  return hash;
+};
+
+export const weatherAt=(save:SaveGame,time:string):WeatherCondition=>{
+  const seed=weatherSeed(save,time);
+  const hour=Number(time.split(":")[0])||12;
+  const windKts=8+(seed%15)+Math.max(0,hour-14);
+  const visibilityKm=5+((seed>>3)%11);
+  const cloudBaseFt=1400+((seed>>6)%43)*100;
+  const precipitation=(seed%9===0?"moderate":seed%4===0?"light":"none") as WeatherCondition["precipitation"];
+  const temperatureC=14+((seed>>9)%13);
+  return {time,windKts,visibilityKm,cloudBaseFt,precipitation,temperatureC};
+};
+
+export const eventWeatherForecast=(save:SaveGame)=>["10:00","12:00","14:00","16:00","18:00"].map(time=>weatherAt(save,time));
+
+export const weatherLimitsFor=(contact:Contact):WeatherLimits=>{
+  const formation=/×|Team|Formation/i.test(contact.aircraft+" "+contact.name);
+  const heritage=/Spitfire|Heritage/i.test(contact.aircraft+" "+contact.name);
+  if(formation)return {maxWindKts:18,minVisibilityKm:8,minCloudBaseFt:3000};
+  if(heritage)return {maxWindKts:16,minVisibilityKm:7,minCloudBaseFt:2500};
+  if(contact.tier==="International")return {maxWindKts:24,minVisibilityKm:6,minCloudBaseFt:2000};
+  return {maxWindKts:22,minVisibilityKm:6,minCloudBaseFt:2200};
+};
+
+export const weatherIssuesForSlot=(save:SaveGame,contact:Contact,time:string)=>{
+  const weather=weatherAt(save,time);
+  const limits=weatherLimitsFor(contact);
+  const issues:string[]=[];
+  if(weather.windKts>limits.maxWindKts)issues.push(`wiatr ${weather.windKts} kt > ${limits.maxWindKts} kt`);
+  if(weather.visibilityKm<limits.minVisibilityKm)issues.push(`widzialność ${weather.visibilityKm} km < ${limits.minVisibilityKm} km`);
+  if(weather.cloudBaseFt<limits.minCloudBaseFt)issues.push(`podstawa chmur ${weather.cloudBaseFt} ft < ${limits.minCloudBaseFt} ft`);
+  if(weather.precipitation==="moderate")issues.push("umiarkowane opady");
+  return issues;
+};
+
+export const weatherRiskLevel=(save:SaveGame)=>{
+  const program=sortedFlightProgram(save);
+  let affected=0;
+  for(const slot of program){
+    const contact=save.contacts.find(c=>c.id===slot.contactId);
+    if(contact&&weatherIssuesForSlot(save,contact,slot.start).length)affected++;
+  }
+  return affected===0?"low":affected>=Math.max(2,Math.ceil(program.length/2))?"high":"medium";
 };
