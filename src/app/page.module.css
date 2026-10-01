@@ -512,3 +512,20 @@
 .incidentChoices button strong{font-size:10px;line-height:1.5;color:var(--accent);letter-spacing:.04em}
 .incidentLock{display:block;padding-top:14px;border-top:1px solid var(--line);color:var(--quiet);font-size:10px}
 @media(max-width:650px){.incidentModal{padding:20px}.incidentChoices{grid-template-columns:1fr}.incidentChoices button{min-height:150px}}
+
+.programSummary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:18px}
+.programPool,.programBoard,.programIssues{border:1px solid var(--line);background:var(--surface);margin-bottom:18px}
+.programPool>div:last-child{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line)}
+.programPool button{border:0;background:var(--surface-2);color:var(--text);padding:15px 16px;display:flex;justify-content:space-between;gap:16px;align-items:center;text-align:left;cursor:pointer}
+.programPool button:hover{background:var(--surface-3)}
+.programPool button span{display:flex;flex-direction:column;gap:4px}.programPool button small{color:var(--muted)}
+.programPool button strong{font-size:9px;letter-spacing:.1em;color:var(--accent)}
+.programSlot{display:grid;grid-template-columns:120px minmax(180px,1.4fr) 170px 170px 64px;gap:14px;align-items:center;padding:15px 18px;border-top:1px solid var(--line)}
+.programTime{display:flex;flex-direction:column;gap:4px}.programTime input{background:var(--surface-2);border:1px solid var(--line);color:var(--text);padding:8px;font-weight:800}.programTime span{font-size:9px;color:var(--quiet)}
+.programAct{display:flex;flex-direction:column;gap:4px}.programAct b{font-size:13px}.programAct span{font-size:10px;color:var(--muted)}
+.programControl{display:grid;grid-template-columns:1fr 28px auto 28px;gap:6px;align-items:center}.programControl>span{font-size:9px;color:var(--quiet);text-transform:uppercase;letter-spacing:.08em}.programControl b{font-size:10px;text-align:center}.programControl button,.programRemove{border:1px solid var(--line);background:var(--surface-2);color:var(--text);height:28px;cursor:pointer}.programControl button:hover,.programRemove:hover{border-color:var(--accent);color:var(--accent)}
+.programRemove{font-size:8px;font-weight:800;letter-spacing:.08em}
+.programEmpty{margin:0;padding:24px 18px;color:var(--muted);font-size:12px}
+.programIssues{padding:18px}.programIssues>span{font-size:9px;font-weight:900;letter-spacing:.12em;color:var(--danger)}.programIssues>div{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.programIssues>div b{width:22px;height:22px;display:grid;place-items:center;border:1px solid var(--danger);color:var(--danger);font-size:10px}.programIssues p{margin:0;color:var(--muted);font-size:11px}
+@media(max-width:1100px){.programSummary{grid-template-columns:repeat(2,minmax(0,1fr))}.programSlot{grid-template-columns:110px 1fr 150px 150px}.programRemove{grid-column:2/-1;width:90px}}
+@media(max-width:760px){.programSummary{grid-template-columns:1fr}.programPool>div:last-child{grid-template-columns:1fr}.programSlot{grid-template-columns:1fr;gap:10px}.programControl{grid-template-columns:70px 32px auto 32px}.programRemove{grid-column:auto;width:100%}}
