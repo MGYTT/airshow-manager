@@ -293,3 +293,22 @@ export const startNextSeason=(save:SaveGame,scaleId:ScaleId):SaveGame=>{
 
 export const contactUnlocked=(save:SaveGame,contact:Contact)=>save.season>=contact.minSeason&&save.reputation>=contact.minReputation;
 export const unlockedContactCount=(save:SaveGame)=>save.contacts.filter(c=>contactUnlocked(save,c)).length;
+
+
+export const participantBaseTotal=(contact:Contact)=>contact.fee+contact.hotel+contact.fuel+contact.support;
+
+export const participantNegotiationRisk=(save:SaveGame,contact:Contact)=>{
+  const commercialLevel=save.departments.find(d=>d.id==="commercial")?.level??1;
+  const leverage=save.reputation-contact.minReputation+commercialLevel*3-contact.negotiationRound*4;
+  return leverage>=12?"low":leverage>=6?"medium":"high";
+};
+
+export const negotiateParticipantOffer=(save:SaveGame,contact:Contact)=>{
+  const commercialLevel=save.departments.find(d=>d.id==="commercial")?.level??1;
+  const leverage=save.reputation-contact.minReputation+commercialLevel*3-contact.negotiationRound*4;
+  const nextRound=contact.negotiationRound+1;
+  if(nextRound>2)return {accepted:false,walked:false,discount:contact.agreedDiscount,nextRound:contact.negotiationRound};
+  const gain=nextRound===1?(leverage>=5?5:leverage>=1?3:0):(leverage>=10?4:leverage>=6?2:0);
+  if(gain===0)return {accepted:false,walked:true,discount:contact.agreedDiscount,nextRound};
+  return {accepted:true,walked:false,discount:Math.min(12,contact.agreedDiscount+gain),nextRound};
+};
