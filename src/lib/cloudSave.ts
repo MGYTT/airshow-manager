@@ -1,6 +1,6 @@
 "use client";
 import { getSupabase } from "./supabase";
-import { migrateSaveData,type SaveGame } from "./game";
+import { migrateSaveData,SAVE_KEY,type SaveGame } from "./game";
 
 export type CloudSaveInfo={game:SaveGame|null;updatedAt:string|null};
 
@@ -29,4 +29,29 @@ export async function deleteCloudGame(userId:string){
   if(!supabase)return;
   const {error}=await supabase.from("game_saves").delete().eq("user_id",userId);
   if(error)throw error;
+}
+
+
+const userCacheKey=(userId:string)=>`${SAVE_KEY}:user:${userId}`;
+const LEGACY_OWNER_KEY="airshow-manager-legacy-save-owner";
+
+export function loadUserCache(userId:string):SaveGame|null{
+  if(typeof window==="undefined")return null;
+  const raw=localStorage.getItem(userCacheKey(userId));
+  if(!raw)return null;
+  try{return migrateSaveData(JSON.parse(raw))}catch{return null}
+}
+
+export function saveUserCache(userId:string,game:SaveGame){
+  if(typeof window==="undefined")return;
+  localStorage.setItem(userCacheKey(userId),JSON.stringify(game));
+}
+
+export function claimLegacyLocalSave(userId:string,legacy:SaveGame|null):SaveGame|null{
+  if(typeof window==="undefined"||!legacy)return null;
+  const owner=localStorage.getItem(LEGACY_OWNER_KEY);
+  if(owner&&owner!==userId)return null;
+  localStorage.setItem(LEGACY_OWNER_KEY,userId);
+  saveUserCache(userId,legacy);
+  return legacy;
 }
