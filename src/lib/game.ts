@@ -476,8 +476,7 @@ export const startNextSeason=(save:SaveGame,scaleId:ScaleId):SaveGame=>{
   const career:Career={...save.career,eventDate:nextEventDate,scaleId,budget:budget.total};
   const currentDate=addDays(nextEventDate,-332);
   return {
-    ...save,version:18,season:save.season+1,career,currentDate,cash:budget.total,crisisReadiness:0,reputationProfile:save.reputationProfile,reputation:Math.round((save.reputationProfile.public+save.reputationProfile.commercial+save.reputationProfile.aviation)/3),
-    reputation:save.reputation,contacts:resetContacts(),sponsors:resetSponsors(),staff:save.staff,
+    ...save,version:18,season:save.season+1,career,currentDate,cash:budget.total,crisisReadiness:0,reputationProfile:save.reputationProfile,reputation:Math.round((save.reputationProfile.public+save.reputationProfile.commercial+save.reputationProfile.aviation)/3),contacts:resetContacts(),sponsors:resetSponsors(),staff:save.staff,
     operations:resetOperations(),infrastructure:resetInfrastructure(),marketing:resetMarketing(),
     awareness:Math.max(8,Math.round(save.awareness*.45)),
     ticketing:{price:99,capacity:scaleCapacity[scaleId],sold:0,salesOpened:false,tiers:createTicketTiers(scaleCapacity[scaleId])},
@@ -502,7 +501,7 @@ export const participantNegotiationRisk=(save:SaveGame,contact:Contact)=>{
 
 export const negotiateParticipantOffer=(save:SaveGame,contact:Contact)=>{
   const commercialLevel=effectiveDepartmentLevel(save,"commercial");
-  const leverage=save.reputation-contact.minReputation+commercialLevel*3-contact.negotiationRound*4;
+  const leverage=reputationValue(save,"aviation")-contact.minReputation+commercialLevel*3-contact.negotiationRound*4;
   const nextRound=contact.negotiationRound+1;
   if(nextRound>2)return {accepted:false,walked:false,discount:contact.agreedDiscount,nextRound:contact.negotiationRound};
   const gain=nextRound===1?(leverage>=5?5:leverage>=1?3:0):(leverage>=10?4:leverage>=6?2:0);
@@ -643,7 +642,8 @@ export const resolveEventDayIssue=(save:SaveGame,choiceId:"a"|"b"):SaveGame=>{
   const contact=slot?save.contacts.find(c=>c.id===slot.contactId):null;
   const completed=choice.cancel?save.eventDay.completedSlotIds:[...save.eventDay.completedSlotIds,issue.slotId];
   const canceled=choice.cancel?[...save.eventDay.canceledSlotIds,issue.slotId]:save.eventDay.canceledSlotIds;
-  const next={...save,reputation:Math.max(0,Math.min(100,save.reputation+choice.reputation)),eventDay:{...save.eventDay,currentIndex:save.eventDay.currentIndex+1,delay:save.eventDay.delay+choice.delay,scoreModifier:save.eventDay.scoreModifier+choice.score,completedSlotIds:completed,canceledSlotIds:canceled,pendingIssue:null,log:[`${contact?.name??"Slot"}: ${choice.label}. ${choice.cancel?"Pokaz odwołany.":choice.delay>0?`Opóźnienie +${choice.delay} min.`:"Program kontynuowany."}`,...save.eventDay.log]}};
+  const reputationAdjusted=withReputationDelta(save,{public:choice.reputation,aviation:choice.reputation});
+  const next={...reputationAdjusted,eventDay:{...save.eventDay,currentIndex:save.eventDay.currentIndex+1,delay:save.eventDay.delay+choice.delay,scoreModifier:save.eventDay.scoreModifier+choice.score,completedSlotIds:completed,canceledSlotIds:canceled,pendingIssue:null,log:[`${contact?.name??"Slot"}: ${choice.label}. ${choice.cancel?"Pokaz odwołany.":choice.delay>0?`Opóźnienie +${choice.delay} min.`:"Program kontynuowany."}`,...save.eventDay.log]}};
   return next.eventDay.currentIndex>=sortedFlightProgram(next).length?finishEventDay(next):next;
 };
 
@@ -662,7 +662,7 @@ export const finishEventDay=(save:SaveGame):SaveGame=>{
   const result:EventResult={...base,score,reputationGain,grade:score>=85?"Excellent":score>=70?"Strong":"Operational"};
   const penaltyTx=sponsorPenaltyTotal>0?{id:`sponsor-penalty-${Date.now()}`,date:save.currentDate,label:"Kary za niewypełnione zobowiązania sponsorskie",amount:-sponsorPenaltyTotal,category:"sponsor" as const}:null;
   const feedLine=sponsorPenaltyTotal>0?`Event Day zakończony. Wynik ${score}/100. Rozliczenie sponsorów: -${money(sponsorPenaltyTotal)}.`:`Event Day zakończony. Wynik sezonu: ${score}/100 · reputacja +${reputationGain}.`;
-  return {...save,cash:save.cash-sponsorPenaltyTotal,eventResult:result,reputation:Math.max(0,Math.min(100,save.reputation+reputationGain-reputationPenalty)),transactions:penaltyTx?[penaltyTx,...save.transactions]:save.transactions,eventDay:{...save.eventDay,status:"completed",pendingIssue:null,log:[`Event Day zakończony. Wynik: ${score}/100.`,...save.eventDay.log]},feed:[feedLine,...save.feed].slice(0,10)};
+  const reputationAdjusted=withReputationDelta(save,{public:reputationGain-reputationPenalty,aviation:Math.max(0,reputationGain-1),commercial:-reputationPenalty});return {...reputationAdjusted,cash:save.cash-sponsorPenaltyTotal,eventResult:result,transactions:penaltyTx?[penaltyTx,...save.transactions]:save.transactions,eventDay:{...save.eventDay,status:"completed",pendingIssue:null,log:[`Event Day zakończony. Wynik: ${score}/100.`,...save.eventDay.log]},feed:[feedLine,...save.feed].slice(0,10)};
 };
 
 
