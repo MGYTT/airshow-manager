@@ -12,7 +12,7 @@ export default function AuthPage(){
   const router=useRouter();
   const params=useSearchParams();
   const {user,loading,configured,signIn,signUp,requestPasswordReset}=useAuth();
-  const [mode,setMode]=useState<Mode>("login");
+  const [mode,setMode]=useState<Mode>(params.get("mode")==="register"?"register":"login");
   const [name,setName]=useState("");
   const [email,setEmail]=useState("");
   const [password,setPassword]=useState("");
@@ -21,6 +21,7 @@ export default function AuthPage(){
   const [error,setError]=useState("");
   const next=params.get("next")||"/gra/centrum";
 
+  useEffect(()=>{if(params.get("mode")==="register")setMode("register");else if(params.get("mode")==="login")setMode("login")},[params]);
   useEffect(()=>{if(!loading&&user)router.replace(next)},[loading,user,router,next]);
 
   const submit=async(e:FormEvent)=>{
