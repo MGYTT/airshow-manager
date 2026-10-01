@@ -20,6 +20,7 @@ export type IncidentEffect={cash?:number;reputation?:number;awareness?:number;re
 export type IncidentChoice={id:"a"|"b";label:string;description:string;effect:IncidentEffect};
 export type Incident={id:string;kind:"crisis"|"opportunity";title:string;description:string;triggerDays:number;choices:[IncidentChoice,IncidentChoice]};
 export type FlightSlot={id:string;contactId:number;start:string;duration:number;buffer:number};
+export type ParticipantLogistics={contactId:number;arrivalDate:string;arrivalTime:string;hotelBooked:boolean;transportReady:boolean;fuelReady:boolean;groundSupportReady:boolean;trainingDate:string;trainingTime:string};
 export type EventDayIssueChoice={id:"a"|"b";label:string;description:string;delay:number;score:number;cancel:boolean;reputation:number};
 export type EventDayIssue={id:string;title:string;description:string;slotId:string;choices:[EventDayIssueChoice,EventDayIssueChoice]};
 export type EventDayState={status:"idle"|"running"|"completed";currentIndex:number;delay:number;scoreModifier:number;completedSlotIds:string[];canceledSlotIds:string[];log:string[];pendingIssue:EventDayIssue|null};
@@ -46,13 +47,13 @@ export type Transaction={
 };
 
 export type SaveGame={
-  version:16;locale:Locale;season:number;career:Career;currentDate:string;cash:number;reputation:number;crisisReadiness:number;
+  version:17;locale:Locale;season:number;career:Career;currentDate:string;cash:number;reputation:number;crisisReadiness:number;
   contacts:Contact[];sponsors:Sponsor[];departments:Department[];staff:StaffMember[];operations:OperationTask[];
   marketing:MarketingCampaign[];infrastructure:InfrastructureProject[];awareness:number;ticketing:Ticketing;
-  feed:string[];transactions:Transaction[];milestonesSeen:number[];eventResult:EventResult|null;seasonHistory:SeasonRecord[];activeIncident:Incident|null;incidentsSeen:string[];flightProgram:FlightSlot[];eventDay:EventDayState;
+  feed:string[];transactions:Transaction[];milestonesSeen:number[];eventResult:EventResult|null;seasonHistory:SeasonRecord[];activeIncident:Incident|null;incidentsSeen:string[];flightProgram:FlightSlot[];participantLogistics:ParticipantLogistics[];eventDay:EventDayState;
 };
 
-export const SAVE_KEY="airshow-manager-save-v16";
+export const SAVE_KEY="airshow-manager-save-v17";
 
 export const scales=[
   {id:"regional" as const,label:"Regionalny AirShow",budget:650000,audience:"do 15 tys. widzów",tone:"Kontrolowany start",description:"Mniejsza skala, prostsza logistyka i większy margines bezpieczeństwa finansowego."},
@@ -152,7 +153,7 @@ export const money=(n:number)=>new Intl.NumberFormat("pl-PL",{style:"currency",c
 
 export function createGame(career:Career,locale:Locale="pl"):SaveGame{
   const currentDate=addDays(career.eventDate,-332);
-  return {version:16,locale,season:1,career,currentDate,cash:career.budget,reputation:12,crisisReadiness:0,contacts:initialContacts,sponsors:initialSponsors,departments:initialDepartments,staff:initialStaff,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:99,capacity:scaleCapacity[career.scaleId],sold:0,salesOpened:false,tiers:createTicketTiers(scaleCapacity[career.scaleId])},feed:["Organizacja została utworzona. Rozpoczyna się pierwszy sezon."],transactions:[{id:"opening",date:currentDate,label:"Budżet startowy organizacji",amount:career.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[],activeIncident:null,incidentsSeen:[],flightProgram:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {version:17,locale,season:1,career,currentDate,cash:career.budget,reputation:12,crisisReadiness:0,contacts:initialContacts,sponsors:initialSponsors,departments:initialDepartments,staff:initialStaff,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:99,capacity:scaleCapacity[career.scaleId],sold:0,salesOpened:false,tiers:createTicketTiers(scaleCapacity[career.scaleId])},feed:["Organizacja została utworzona. Rozpoczyna się pierwszy sezon."],transactions:[{id:"opening",date:currentDate,label:"Budżet startowy organizacji",amount:career.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[],activeIncident:null,incidentsSeen:[],flightProgram:[],participantLogistics:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 export function saveGame(save:SaveGame){localStorage.setItem(SAVE_KEY,JSON.stringify(save))}
@@ -177,63 +178,88 @@ const hydrateTicketing=(old:any):Ticketing=>{
   return {price:Number(old?.price)||99,capacity,sold:legacySold,salesOpened:Boolean(old?.salesOpened),tiers:migrated};
 };
 
+const defaultParticipantLogistics=(contactId:number,eventDate:string):ParticipantLogistics=>({
+  contactId,
+  arrivalDate:addDays(eventDate,-2),
+  arrivalTime:"12:00",
+  hotelBooked:false,
+  transportReady:false,
+  fuelReady:false,
+  groundSupportReady:false,
+  trainingDate:addDays(eventDate,-1),
+  trainingTime:"14:00"
+});
+
+const hydrateParticipantLogistics=(old:any,contacts:Contact[],eventDate:string):ParticipantLogistics[]=>{
+  const existing=Array.isArray(old)?old:[];
+  return contacts.filter(c=>c.status==="confirmed").map(c=>({
+    ...defaultParticipantLogistics(c.id,eventDate),
+    ...(existing.find((x:any)=>x?.contactId===c.id)??{})
+  }));
+};
+
+function migrateV16(old:any):SaveGame{
+  const contacts=hydrateContacts(old.contacts);
+  return {...old,version:17,contacts,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,contacts,old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332))};
+}
+
 function migrateV15(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff};
+  return {...old,version:17,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,hydrateContacts(old.contacts),old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332)),staff:old.staff??initialStaff};
 }
 
 function migrateV14(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing)};
+  return {...old,version:17,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,hydrateContacts(old.contacts),old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332)),staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing)};
 }
 
 function migrateV13(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors)};
+  return {...old,version:17,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,hydrateContacts(old.contacts),old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332)),staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors)};
 }
 
 function migrateV12(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:17,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,hydrateContacts(old.contacts),old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332)),staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV11(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:17,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,hydrateContacts(old.contacts),old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332)),staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV10(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),crisisReadiness:old.crisisReadiness??0,activeIncident:old.activeIncident??null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:17,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,hydrateContacts(old.contacts),old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332)),staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),crisisReadiness:old.crisisReadiness??0,activeIncident:old.activeIncident??null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV9(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),contacts:hydrateContacts(old.contacts),sponsors:hydrateSponsors(old.sponsors),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:17,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,hydrateContacts(old.contacts),old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332)),staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),contacts:hydrateContacts(old.contacts),sponsors:hydrateSponsors(old.sponsors),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV8(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),contacts:hydrateContacts(old.contacts),sponsors:hydrateSponsors(old.sponsors),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:17,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,hydrateContacts(old.contacts),old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332)),staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),contacts:hydrateContacts(old.contacts),sponsors:hydrateSponsors(old.sponsors),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV7(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),seasonHistory:old.seasonHistory??[],crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:17,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,hydrateContacts(old.contacts),old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332)),staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),seasonHistory:old.seasonHistory??[],crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV6(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),eventResult:old.eventResult??null,seasonHistory:old.seasonHistory??[],crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:17,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,hydrateContacts(old.contacts),old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332)),staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),eventResult:old.eventResult??null,seasonHistory:old.seasonHistory??[],crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV5(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),infrastructure:old.infrastructure??initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:17,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,hydrateContacts(old.contacts),old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332)),staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),infrastructure:old.infrastructure??initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV4(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing??{price:99,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null},marketing:old.marketing??initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:old.awareness??8};
+  return {...old,version:17,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,hydrateContacts(old.contacts),old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332)),staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing??{price:99,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null},marketing:old.marketing??initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:old.awareness??8};
 }
 
 function migrateV3(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing??{price:99,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null},departments:old.departments??initialDepartments,operations:old.operations??initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:8};
+  return {...old,version:17,participantLogistics:hydrateParticipantLogistics(old.participantLogistics,hydrateContacts(old.contacts),old.career?.eventDate??addDays(new Date().toISOString().slice(0,10),332)),staff:old.staff??initialStaff,ticketing:hydrateTicketing(old.ticketing??{price:99,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}),sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null},departments:old.departments??initialDepartments,operations:old.operations??initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:8};
 }
 
 function migrateV2(old:any):SaveGame{
   return {
-    version:16,locale:old.locale??"pl",season:old.season??1,crisisReadiness:old.crisisReadiness??0,career:old.career,currentDate:old.currentDate,cash:old.cash,reputation:old.reputation??12,
+    version:17,locale:old.locale??"pl",season:old.season??1,crisisReadiness:old.crisisReadiness??0,career:old.career,currentDate:old.currentDate,cash:old.cash,reputation:old.reputation??12,
     contacts:hydrateContacts(old.contacts),sponsors:initialSponsors,departments:initialDepartments,staff:initialStaff,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:99,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false,tiers:createTicketTiers(legacyScaleCapacity(old))},feed:old.feed??[],
-    transactions:old.transactions??[{id:"migration-v2",date:old.currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash,category:"start"}],
+    participantLogistics:[],transactions:old.transactions??[{id:"migration-v2",date:old.currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash,category:"start"}],
     milestonesSeen:[],eventResult:null,seasonHistory:old.seasonHistory??[],activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}
   };
 }
@@ -246,12 +272,14 @@ function migrateV1(old:any):SaveGame{
     ...initialContacts.find(base=>base.id===c.id)!,id:c.id,name:c.name,country:c.country,aircraft:c.aircraft,fee:c.fee,hotel:c.hotel,fuel:c.fuel,support:c.support,
     status:({Available:"available",Invited:"invited",Interested:"interested",Declined:"declined",Confirmed:"confirmed"} as Record<string,Status>)[c.status]??c.status??"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0
   }));
-  return {version:16,locale:"pl",season:1,crisisReadiness:0,career:{eventName:old.career?.eventName??"Mój AirShow",location:old.career?.location??"Polska",eventDate,scaleId:scale.id,budget:old.career?.budget??scale.budget},currentDate,cash:old.cash??scale.budget,reputation:12,contacts,sponsors:initialSponsors,departments:initialDepartments,staff:initialStaff,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:99,capacity:scaleCapacity[scale.id],sold:0,salesOpened:false,tiers:createTicketTiers(scaleCapacity[scale.id])},feed:old.feed??[],transactions:[{id:"migration-v1",date:currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash??scale.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[],activeIncident:null,incidentsSeen:[],flightProgram:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {version:17,locale:"pl",season:1,crisisReadiness:0,career:{eventName:old.career?.eventName??"Mój AirShow",location:old.career?.location??"Polska",eventDate,scaleId:scale.id,budget:old.career?.budget??scale.budget},currentDate,cash:old.cash??scale.budget,reputation:12,contacts,sponsors:initialSponsors,departments:initialDepartments,staff:initialStaff,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:99,capacity:scaleCapacity[scale.id],sold:0,salesOpened:false,tiers:createTicketTiers(scaleCapacity[scale.id])},feed:old.feed??[],participantLogistics:[],transactions:[{id:"migration-v1",date:currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash??scale.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[],activeIncident:null,incidentsSeen:[],flightProgram:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 export function loadGame():SaveGame|null{
   const raw=localStorage.getItem(SAVE_KEY);
   if(raw){try{return JSON.parse(raw) as SaveGame}catch{localStorage.removeItem(SAVE_KEY)}}
+  const v16=localStorage.getItem("airshow-manager-save-v16");
+  if(v16){try{const migrated=migrateV16(JSON.parse(v16));saveGame(migrated);return migrated}catch{}}
   const v15=localStorage.getItem("airshow-manager-save-v15");
   if(v15){try{const migrated=migrateV15(JSON.parse(v15));saveGame(migrated);return migrated}catch{}}
   const v14=localStorage.getItem("airshow-manager-save-v14");
@@ -427,14 +455,14 @@ export const startNextSeason=(save:SaveGame,scaleId:ScaleId):SaveGame=>{
   const career:Career={...save.career,eventDate:nextEventDate,scaleId,budget:budget.total};
   const currentDate=addDays(nextEventDate,-332);
   return {
-    ...save,version:16,season:save.season+1,career,currentDate,cash:budget.total,crisisReadiness:0,
+    ...save,version:17,season:save.season+1,career,currentDate,cash:budget.total,crisisReadiness:0,
     reputation:save.reputation,contacts:resetContacts(),sponsors:resetSponsors(),staff:save.staff,
     operations:resetOperations(),infrastructure:resetInfrastructure(),marketing:resetMarketing(),
     awareness:Math.max(8,Math.round(save.awareness*.45)),
     ticketing:{price:99,capacity:scaleCapacity[scaleId],sold:0,salesOpened:false,tiers:createTicketTiers(scaleCapacity[scaleId])},
     feed:[`Rozpoczyna się sezon ${save.season+1}. Budżet otwarcia: ${money(budget.total)}.`],
     transactions:[{id:`opening-s${save.season+1}`,date:currentDate,label:`Budżet otwarcia sezonu ${save.season+1}`,amount:budget.total,category:"start"}],
-    milestonesSeen:[],eventResult:null,seasonHistory:[...save.seasonHistory,record],activeIncident:null,incidentsSeen:[],flightProgram:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}
+    milestonesSeen:[],eventResult:null,seasonHistory:[...save.seasonHistory,record],activeIncident:null,incidentsSeen:[],flightProgram:[],participantLogistics:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}
   };
 };
 
@@ -683,4 +711,29 @@ export const commandDeadlines=(save:SaveGame):CommandDeadline[]=>{
     {id:"flight",days:30,title:"Zatwierdź finalny Flight Program",detail:"Wszyscy uczestnicy muszą mieć bezkolizyjne sloty.",done:flightProgramReady(save)}
   ];
   return items.map(item=>({...item,status:item.done?"done":days<=item.days?"urgent":"open"} as CommandDeadline));
+};
+
+
+export const participantLogisticsFor=(save:SaveGame,contactId:number)=>save.participantLogistics.find(l=>l.contactId===contactId)??null;
+
+export const participantLogisticsIssues=(save:SaveGame,contactId:number)=>{
+  const l=participantLogisticsFor(save,contactId);
+  if(!l)return ["Brak planu logistycznego"];
+  const issues:string[]=[];
+  if(!l.hotelBooked)issues.push("Hotel niepotwierdzony");
+  if(!l.transportReady)issues.push("Transport załogi niepotwierdzony");
+  if(!l.fuelReady)issues.push("Paliwo nieprzygotowane");
+  if(!l.groundSupportReady)issues.push("Obsługa naziemna nieprzygotowana");
+  if(!l.arrivalDate||l.arrivalDate>save.career.eventDate)issues.push("Nieprawidłowy termin przylotu");
+  if(!l.trainingDate||l.trainingDate>save.career.eventDate)issues.push("Nieprawidłowy slot treningowy");
+  return issues;
+};
+
+export const participantLogisticsReady=(save:SaveGame,contactId:number)=>participantLogisticsIssues(save,contactId).length===0;
+
+export const logisticsReadiness=(save:SaveGame)=>{
+  const confirmed=save.contacts.filter(c=>c.status==="confirmed");
+  if(!confirmed.length)return 0;
+  const ready=confirmed.filter(c=>participantLogisticsReady(save,c.id)).length;
+  return Math.round(ready/confirmed.length*100);
 };
