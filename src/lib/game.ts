@@ -27,10 +27,13 @@ export type Contact={
   status:Status;replyAt:string|null;offerExpiresAt:string|null;negotiationRound:number;agreedDiscount:number;minReputation:number;minSeason:number;tier:"Regional"|"National"|"International";
 };
 
+export type SponsorMetric="confirmedActs"|"awareness"|"marketing"|"ticketSales";
+export type SponsorCommitment={metric:SponsorMetric;target:number;label:string};
 export type Sponsor={
   id:number;name:string;industry:string;tier:"Lokalny"|"Strategiczny"|"Główny";
-  baseOffer:number;perConfirmedAct:number;minReputation:number;requirement:string;
-  status:SponsorStatus;replyAt:string|null;offer:number|null;negotiated:boolean;
+  baseOffer:number;perConfirmedAct:number;minReputation:number;requirement:string;exclusiveGroup:string;
+  commitments:SponsorCommitment[];penaltyRate:number;
+  status:SponsorStatus;replyAt:string|null;offer:number|null;negotiated:boolean;offerExpiresAt:string|null;negotiationRound:number;
 };
 
 export type Transaction={
@@ -39,13 +42,13 @@ export type Transaction={
 };
 
 export type SaveGame={
-  version:13;locale:Locale;season:number;career:Career;currentDate:string;cash:number;reputation:number;crisisReadiness:number;
+  version:14;locale:Locale;season:number;career:Career;currentDate:string;cash:number;reputation:number;crisisReadiness:number;
   contacts:Contact[];sponsors:Sponsor[];departments:Department[];operations:OperationTask[];
   marketing:MarketingCampaign[];infrastructure:InfrastructureProject[];awareness:number;ticketing:Ticketing;
   feed:string[];transactions:Transaction[];milestonesSeen:number[];eventResult:EventResult|null;seasonHistory:SeasonRecord[];activeIncident:Incident|null;incidentsSeen:string[];flightProgram:FlightSlot[];eventDay:EventDayState;
 };
 
-export const SAVE_KEY="airshow-manager-save-v13";
+export const SAVE_KEY="airshow-manager-save-v14";
 
 export const scales=[
   {id:"regional" as const,label:"Regionalny AirShow",budget:650000,audience:"do 15 tys. widzów",tone:"Kontrolowany start",description:"Mniejsza skala, prostsza logistyka i większy margines bezpieczeństwa finansowego."},
@@ -67,10 +70,12 @@ export const initialContacts:Contact[]=[
 ];
 
 export const initialSponsors:Sponsor[]=[
-  {id:1,name:"AeroFuel Polska",industry:"Paliwa lotnicze",tier:"Strategiczny",baseOffer:120000,perConfirmedAct:12000,minReputation:8,requirement:"Wyłączność branżowa w kategorii paliw i ekspozycja przy strefie operacyjnej.",status:"prospect",replyAt:null,offer:null,negotiated:false},
-  {id:2,name:"Northline Bank",industry:"Finanse",tier:"Główny",baseOffer:210000,perConfirmedAct:18000,minReputation:16,requirement:"Status sponsora głównego, branding sceny oraz pakiet hospitality dla klientów.",status:"prospect",replyAt:null,offer:null,negotiated:false},
-  {id:3,name:"SkyGrid Systems",industry:"Technologie",tier:"Strategiczny",baseOffer:95000,perConfirmedAct:10000,minReputation:10,requirement:"Strefa technologiczna i obecność marki w materiałach cyfrowych wydarzenia.",status:"prospect",replyAt:null,offer:null,negotiated:false},
-  {id:4,name:"Vistula Motors",industry:"Motoryzacja",tier:"Lokalny",baseOffer:70000,perConfirmedAct:7000,minReputation:6,requirement:"Ekspozycja pojazdów w strefie publiczności i 20 zaproszeń VIP.",status:"prospect",replyAt:null,offer:null,negotiated:false},
+  {id:1,name:"AeroFuel Polska",industry:"Paliwa lotnicze",tier:"Strategiczny",baseOffer:120000,perConfirmedAct:12000,minReputation:8,requirement:"Wyłączność branżowa w kategorii paliw i ekspozycja przy strefie operacyjnej.",exclusiveGroup:"fuel",commitments:[{metric:"confirmedActs",target:2,label:"Minimum 2 potwierdzone pokazy"},{metric:"marketing",target:1,label:"Minimum 1 kampania marketingowa"}],penaltyRate:.25,status:"prospect",replyAt:null,offer:null,negotiated:false,offerExpiresAt:null,negotiationRound:0},
+  {id:2,name:"Northline Bank",industry:"Finanse",tier:"Główny",baseOffer:210000,perConfirmedAct:18000,minReputation:16,requirement:"Status sponsora głównego, branding sceny oraz pakiet hospitality dla klientów.",exclusiveGroup:"finance",commitments:[{metric:"awareness",target:55,label:"Rozpoznawalność 55+"},{metric:"ticketSales",target:35,label:"Sprzedaż min. 35% pojemności"},{metric:"confirmedActs",target:3,label:"Minimum 3 potwierdzone pokazy"}],penaltyRate:.35,status:"prospect",replyAt:null,offer:null,negotiated:false,offerExpiresAt:null,negotiationRound:0},
+  {id:3,name:"SkyGrid Systems",industry:"Technologie",tier:"Strategiczny",baseOffer:95000,perConfirmedAct:10000,minReputation:10,requirement:"Strefa technologiczna i obecność marki w materiałach cyfrowych wydarzenia.",exclusiveGroup:"technology",commitments:[{metric:"awareness",target:40,label:"Rozpoznawalność 40+"},{metric:"marketing",target:2,label:"Minimum 2 kampanie marketingowe"}],penaltyRate:.25,status:"prospect",replyAt:null,offer:null,negotiated:false,offerExpiresAt:null,negotiationRound:0},
+  {id:4,name:"Vistula Motors",industry:"Motoryzacja",tier:"Lokalny",baseOffer:70000,perConfirmedAct:7000,minReputation:6,requirement:"Ekspozycja pojazdów w strefie publiczności i 20 zaproszeń VIP.",exclusiveGroup:"automotive",commitments:[{metric:"ticketSales",target:20,label:"Sprzedaż min. 20% pojemności"}],penaltyRate:.2,status:"prospect",replyAt:null,offer:null,negotiated:false,offerExpiresAt:null,negotiationRound:0},
+  {id:5,name:"JetCore Energy",industry:"Paliwa lotnicze",tier:"Główny",baseOffer:185000,perConfirmedAct:15000,minReputation:22,requirement:"Wyłączność paliwowa, branding strefy tankowania i ekspozycja przy zapleczu technicznym.",exclusiveGroup:"fuel",commitments:[{metric:"confirmedActs",target:3,label:"Minimum 3 potwierdzone pokazy"},{metric:"awareness",target:50,label:"Rozpoznawalność 50+"}],penaltyRate:.3,status:"prospect",replyAt:null,offer:null,negotiated:false,offerExpiresAt:null,negotiationRound:0},
+  {id:6,name:"Meridian Financial",industry:"Finanse",tier:"Strategiczny",baseOffer:135000,perConfirmedAct:11000,minReputation:20,requirement:"Wyłączność w sektorze finansowym i branding strefy VIP.",exclusiveGroup:"finance",commitments:[{metric:"ticketSales",target:30,label:"Sprzedaż min. 30% pojemności"},{metric:"marketing",target:1,label:"Minimum 1 kampania marketingowa"}],penaltyRate:.25,status:"prospect",replyAt:null,offer:null,negotiated:false,offerExpiresAt:null,negotiationRound:0}
 ];
 
 export const initialDepartments:Department[]=[
@@ -120,7 +125,7 @@ export const money=(n:number)=>new Intl.NumberFormat("pl-PL",{style:"currency",c
 
 export function createGame(career:Career,locale:Locale="pl"):SaveGame{
   const currentDate=addDays(career.eventDate,-332);
-  return {version:13,locale,season:1,career,currentDate,cash:career.budget,reputation:12,crisisReadiness:0,contacts:initialContacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:89,capacity:scaleCapacity[career.scaleId],sold:0,salesOpened:false},feed:["Organizacja została utworzona. Rozpoczyna się pierwszy sezon."],transactions:[{id:"opening",date:currentDate,label:"Budżet startowy organizacji",amount:career.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[],activeIncident:null,incidentsSeen:[],flightProgram:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {version:14,locale,season:1,career,currentDate,cash:career.budget,reputation:12,crisisReadiness:0,contacts:initialContacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:89,capacity:scaleCapacity[career.scaleId],sold:0,salesOpened:false},feed:["Organizacja została utworzona. Rozpoczyna się pierwszy sezon."],transactions:[{id:"opening",date:currentDate,label:"Budżet startowy organizacji",amount:career.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[],activeIncident:null,incidentsSeen:[],flightProgram:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 export function saveGame(save:SaveGame){localStorage.setItem(SAVE_KEY,JSON.stringify(save))}
@@ -130,49 +135,58 @@ const hydrateContacts=(existing:any[]=[])=>initialContacts.map(base=>{
   return old?{...base,...old,offerExpiresAt:old.offerExpiresAt??null,negotiationRound:old.negotiationRound??0,agreedDiscount:old.agreedDiscount??0,minReputation:base.minReputation,minSeason:base.minSeason,tier:base.tier}:({...base});
 });
 
+const hydrateSponsors=(existing:any[]=[])=>initialSponsors.map(base=>{
+  const old=existing.find(s=>s?.id===base.id);
+  return old?{...base,...old,exclusiveGroup:base.exclusiveGroup,commitments:base.commitments,penaltyRate:base.penaltyRate,offerExpiresAt:old.offerExpiresAt??null,negotiationRound:old.negotiationRound??0}:({...base});
+});
+
+function migrateV13(old:any):SaveGame{
+  return {...old,version:14,sponsors:hydrateSponsors(old.sponsors)};
+}
+
 function migrateV12(old:any):SaveGame{
-  return {...old,version:13,eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:14,sponsors:hydrateSponsors(old.sponsors),eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV11(old:any):SaveGame{
-  return {...old,version:13,flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:14,sponsors:hydrateSponsors(old.sponsors),flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV10(old:any):SaveGame{
-  return {...old,version:13,crisisReadiness:old.crisisReadiness??0,activeIncident:old.activeIncident??null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:14,sponsors:hydrateSponsors(old.sponsors),crisisReadiness:old.crisisReadiness??0,activeIncident:old.activeIncident??null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV9(old:any):SaveGame{
-  return {...old,version:13,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:14,contacts:hydrateContacts(old.contacts),sponsors:hydrateSponsors(old.sponsors),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV8(old:any):SaveGame{
-  return {...old,version:13,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:14,contacts:hydrateContacts(old.contacts),sponsors:hydrateSponsors(old.sponsors),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV7(old:any):SaveGame{
-  return {...old,version:13,season:old.season??1,contacts:hydrateContacts(old.contacts),seasonHistory:old.seasonHistory??[],crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:14,sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),seasonHistory:old.seasonHistory??[],crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV6(old:any):SaveGame{
-  return {...old,version:13,season:old.season??1,contacts:hydrateContacts(old.contacts),eventResult:old.eventResult??null,seasonHistory:old.seasonHistory??[],crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:14,sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),eventResult:old.eventResult??null,seasonHistory:old.seasonHistory??[],crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV5(old:any):SaveGame{
-  return {...old,version:13,season:old.season??1,contacts:hydrateContacts(old.contacts),infrastructure:old.infrastructure??initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {...old,version:14,sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),infrastructure:old.infrastructure??initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 function migrateV4(old:any):SaveGame{
-  return {...old,version:13,season:old.season??1,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null},marketing:old.marketing??initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:old.awareness??8,ticketing:old.ticketing??{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}};
+  return {...old,version:14,sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null},marketing:old.marketing??initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:old.awareness??8,ticketing:old.ticketing??{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}};
 }
 
 function migrateV3(old:any):SaveGame{
-  return {...old,version:13,season:old.season??1,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null},departments:old.departments??initialDepartments,operations:old.operations??initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:8,ticketing:{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}};
+  return {...old,version:14,sponsors:hydrateSponsors(old.sponsors),season:old.season??1,contacts:hydrateContacts(old.contacts),crisisReadiness:old.crisisReadiness??0,activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null},departments:old.departments??initialDepartments,operations:old.operations??initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,eventResult:null,seasonHistory:old.seasonHistory??[],awareness:8,ticketing:{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false}};
 }
 
 function migrateV2(old:any):SaveGame{
   return {
-    version:13,locale:old.locale??"pl",season:old.season??1,crisisReadiness:old.crisisReadiness??0,career:old.career,currentDate:old.currentDate,cash:old.cash,reputation:old.reputation??12,
+    version:14,locale:old.locale??"pl",season:old.season??1,crisisReadiness:old.crisisReadiness??0,career:old.career,currentDate:old.currentDate,cash:old.cash,reputation:old.reputation??12,
     contacts:hydrateContacts(old.contacts),sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:89,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false},feed:old.feed??[],
     transactions:old.transactions??[{id:"migration-v2",date:old.currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash,category:"start"}],
     milestonesSeen:[],eventResult:null,seasonHistory:old.seasonHistory??[],activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}
@@ -187,12 +201,14 @@ function migrateV1(old:any):SaveGame{
     ...initialContacts.find(base=>base.id===c.id)!,id:c.id,name:c.name,country:c.country,aircraft:c.aircraft,fee:c.fee,hotel:c.hotel,fuel:c.fuel,support:c.support,
     status:({Available:"available",Invited:"invited",Interested:"interested",Declined:"declined",Confirmed:"confirmed"} as Record<string,Status>)[c.status]??c.status??"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0
   }));
-  return {version:13,locale:"pl",season:1,crisisReadiness:0,career:{eventName:old.career?.eventName??"Mój AirShow",location:old.career?.location??"Polska",eventDate,scaleId:scale.id,budget:old.career?.budget??scale.budget},currentDate,cash:old.cash??scale.budget,reputation:12,contacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:89,capacity:scaleCapacity[scale.id],sold:0,salesOpened:false},feed:old.feed??[],transactions:[{id:"migration-v1",date:currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash??scale.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[],activeIncident:null,incidentsSeen:[],flightProgram:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {version:14,locale:"pl",season:1,crisisReadiness:0,career:{eventName:old.career?.eventName??"Mój AirShow",location:old.career?.location??"Polska",eventDate,scaleId:scale.id,budget:old.career?.budget??scale.budget},currentDate,cash:old.cash??scale.budget,reputation:12,contacts,sponsors:initialSponsors,departments:initialDepartments,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:89,capacity:scaleCapacity[scale.id],sold:0,salesOpened:false},feed:old.feed??[],transactions:[{id:"migration-v1",date:currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash??scale.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[],activeIncident:null,incidentsSeen:[],flightProgram:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 export function loadGame():SaveGame|null{
   const raw=localStorage.getItem(SAVE_KEY);
   if(raw){try{return JSON.parse(raw) as SaveGame}catch{localStorage.removeItem(SAVE_KEY)}}
+  const v13=localStorage.getItem("airshow-manager-save-v13");
+  if(v13){try{const migrated=migrateV13(JSON.parse(v13));saveGame(migrated);return migrated}catch{}}
   const v12=localStorage.getItem("airshow-manager-save-v12");
   if(v12){try{const migrated=migrateV12(JSON.parse(v12));saveGame(migrated);return migrated}catch{}}
   const v11=localStorage.getItem("airshow-manager-save-v11");
@@ -285,7 +301,7 @@ export const calculateEventResult=(save:SaveGame):EventResult=>{
 
 
 const resetContacts=()=>initialContacts.map(c=>({...c,status:"available" as Status,replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0}));
-const resetSponsors=()=>initialSponsors.map(s=>({...s,status:"prospect" as SponsorStatus,replyAt:null,offer:null,negotiated:false}));
+const resetSponsors=()=>initialSponsors.map(s=>({...s,status:"prospect" as SponsorStatus,replyAt:null,offer:null,negotiated:false,offerExpiresAt:null,negotiationRound:0}));
 const resetOperations=()=>initialOperations.map(o=>({...o,completed:false}));
 const resetInfrastructure=()=>initialInfrastructure.map(i=>({...i,completed:false}));
 const resetMarketing=()=>initialMarketing.map(m=>({...m,completed:false}));
@@ -305,7 +321,7 @@ export const startNextSeason=(save:SaveGame,scaleId:ScaleId):SaveGame=>{
   const career:Career={...save.career,eventDate:nextEventDate,scaleId,budget:budget.total};
   const currentDate=addDays(nextEventDate,-332);
   return {
-    ...save,version:13,season:save.season+1,career,currentDate,cash:budget.total,crisisReadiness:0,
+    ...save,version:14,season:save.season+1,career,currentDate,cash:budget.total,crisisReadiness:0,
     reputation:save.reputation,contacts:resetContacts(),sponsors:resetSponsors(),
     operations:resetOperations(),infrastructure:resetInfrastructure(),marketing:resetMarketing(),
     awareness:Math.max(8,Math.round(save.awareness*.45)),
@@ -465,3 +481,26 @@ export const finishEventDay=(save:SaveGame):SaveGame=>{
   const result:EventResult={...base,score,reputationGain,grade:score>=85?"Excellent":score>=70?"Strong":"Operational"};
   return {...save,eventResult:result,reputation:Math.min(100,save.reputation+reputationGain),eventDay:{...save.eventDay,status:"completed",pendingIssue:null,log:[`Event Day zakończony. Wynik: ${score}/100.`,...save.eventDay.log]},feed:[`Event Day zakończony. Wynik sezonu: ${score}/100 · reputacja +${reputationGain}.`,...save.feed].slice(0,10)};
 };
+
+
+export const sponsorMetricValue=(save:SaveGame,metric:SponsorMetric)=>{
+  if(metric==="confirmedActs")return save.contacts.filter(c=>c.status==="confirmed").length;
+  if(metric==="awareness")return save.awareness;
+  if(metric==="marketing")return save.marketing.filter(m=>m.completed).length;
+  if(metric==="ticketSales")return save.ticketing.capacity>0?Math.round(save.ticketing.sold/save.ticketing.capacity*100):0;
+  return 0;
+};
+
+export const sponsorCommitmentProgress=(save:SaveGame,sponsor:Sponsor)=>sponsor.commitments.map(c=>({...c,current:sponsorMetricValue(save,c.metric),fulfilled:sponsorMetricValue(save,c.metric)>=c.target}));
+
+export const sponsorConflict=(save:SaveGame,sponsor:Sponsor)=>save.sponsors.find(s=>s.id!==sponsor.id&&s.status==="partner"&&s.exclusiveGroup===sponsor.exclusiveGroup)??null;
+
+export const sponsorPenalty=(save:SaveGame,sponsor:Sponsor)=>{
+  if(sponsor.status!=="partner"||!sponsor.offer)return 0;
+  const progress=sponsorCommitmentProgress(save,sponsor);
+  const missing=progress.filter(p=>!p.fulfilled).length;
+  if(!missing)return 0;
+  return Math.round(sponsor.offer*sponsor.penaltyRate*(missing/progress.length));
+};
+
+export const totalSponsorPenalty=(save:SaveGame)=>save.sponsors.reduce((sum,s)=>sum+sponsorPenalty(save,s),0);
