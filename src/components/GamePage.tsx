@@ -93,6 +93,7 @@ export default function GamePage({section}:{section:string}){
   <section className={styles.gameMain}><header className={styles.gameHeader}><div className={styles.headerIdentity}><span>{active==="centrum"?"CENTRUM DOWODZENIA":t(game.locale,`nav.${sections.find(x=>x[0]===active)?.[1]}` as any).toUpperCase()}</span><h1>{game.career.eventName}</h1><p>{game.career.location} · {formatDate(game.career.eventDate)}</p></div><div className={styles.headerRight}><div className={styles.headerMetrics}><span><small>GOTOWOŚĆ</small><b>{readiness(game)}%</b></span><span><small>REPUTACJA</small><b>{game.reputation}</b></span><span><small>SALDO</small><b>{money(game.cash)}</b></span></div><div className={styles.clock}><div><b>{days}</b><span>DNI DO POKAZU</span></div><div><button onClick={()=>advance(1)}>+1 dzień</button><button onClick={()=>advance(7)}>+7 dni</button></div></div></div></header>
   {active==="centrum"&&<Center game={game}/>}
   {active==="uczestnicy"&&<Participants game={game} invite={invite} open={setSelected}/>}
+  {active==="logistyka"&&<Logistics game={game} update={updateParticipantLogistics}/>}\n  {active==="pogoda"&&<WeatherOps game={game}/>}
   {active==="finanse"&&<Finance game={game}/>}
   {active==="sponsorzy"&&<Sponsors game={game} contact={contactSponsor} negotiate={negotiateSponsor} accept={acceptSponsor}/>}
   {active==="zespol"&&<Team game={game} upgrade={upgradeDepartment} hire={hireStaff} release={releaseStaff}/>}
