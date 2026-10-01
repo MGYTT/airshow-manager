@@ -293,6 +293,20 @@ function migrateV1(old:any):SaveGame{
   return {version:18,locale:"pl",season:1,reputationProfile:{public:12,commercial:12,aviation:12},crisisReadiness:0,career:{eventName:old.career?.eventName??"Mój AirShow",location:old.career?.location??"Polska",eventDate,scaleId:scale.id,budget:old.career?.budget??scale.budget},currentDate,cash:old.cash??scale.budget,reputation:12,contacts,sponsors:initialSponsors,departments:initialDepartments,staff:initialStaff,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:99,capacity:scaleCapacity[scale.id],sold:0,salesOpened:false,tiers:createTicketTiers(scaleCapacity[scale.id])},feed:old.feed??[],participantLogistics:[],transactions:[{id:"migration-v1",date:currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash??scale.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[],activeIncident:null,incidentsSeen:[],flightProgram:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
+export function migrateSaveData(value:unknown):SaveGame|null{
+  if(!value||typeof value!=="object")return null;
+  const old=value as any;
+  try{
+    const version=Number(old.version??1);
+    if(version===18)return old as SaveGame;
+    const migrations:Record<number,(data:any)=>SaveGame>={
+      17:migrateV17,16:migrateV16,15:migrateV15,14:migrateV14,13:migrateV13,12:migrateV12,11:migrateV11,10:migrateV10,
+      9:migrateV9,8:migrateV8,7:migrateV7,6:migrateV6,5:migrateV5,4:migrateV4,3:migrateV3,2:migrateV2,1:migrateV1
+    };
+    return migrations[version]?.(old)??null;
+  }catch{return null}
+}
+
 export function loadGame():SaveGame|null{
   const raw=localStorage.getItem(SAVE_KEY);
   if(raw){try{return JSON.parse(raw) as SaveGame}catch{localStorage.removeItem(SAVE_KEY)}}
