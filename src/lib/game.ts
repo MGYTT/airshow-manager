@@ -574,3 +574,55 @@ export const negotiateSponsorOffer=(save:SaveGame,sponsor:Sponsor)=>{
   if(increase===0&&leverage<3)return {walked:true,offer:sponsor.offer,nextRound};
   return {walked:false,offer:Math.round(sponsor.offer*(1+increase)),nextRound};
 };
+
+
+export type CommandRisk={id:string;severity:"low"|"medium"|"high";title:string;detail:string};
+export type CommandDeadline={id:string;days:number;title:string;detail:string;status:"done"|"open"|"urgent"};
+
+export const forecastCashAtEvent=(save:SaveGame)=>{
+  const days=daysBetween(save.currentDate,save.career.eventDate);
+  const payroll=Math.round(monthlyPayroll(save)*days/30);
+  const ticketDemand=ticketDemandByTier(save);
+  const ticketRevenue=save.ticketing.salesOpened?save.ticketing.tiers.reduce((sum,t)=>{
+    const potential=Math.min(t.capacity-t.sold,(ticketDemand[t.id]??0)*days);
+    return sum+potential*t.price;
+  },0):0;
+  const sponsorRisk=totalSponsorPenalty(save);
+  return save.cash-payroll+ticketRevenue-sponsorRisk;
+};
+
+export const commandRisks=(save:SaveGame):CommandRisk[]=>{
+  const days=daysBetween(save.currentDate,save.career.eventDate);
+  const risks:CommandRisk[]=[];
+  const confirmed=save.contacts.filter(c=>c.status==="confirmed").length;
+  const ready=readiness(save);
+  const forecast=forecastCashAtEvent(save);
+  const sponsorRisk=totalSponsorPenalty(save);
+  const programIssues=flightProgramIssues(save);
+  if(confirmed<2)risks.push({id:"program",severity:days<=120?"high":"medium",title:"Program lotniczy jest zbyt słaby",detail:`${confirmed}/2 wymaganych uczestników potwierdzonych.`});
+  if(programIssues.length>0&&confirmed>=2)risks.push({id:"flight",severity:days<=60?"high":"medium",title:"Program lotniczy wymaga korekty",detail:programIssues[0]});
+  if(forecast<0)risks.push({id:"cash",severity:"high",title:"Prognozowany deficyt budżetu",detail:`Prognoza na Event Day: ${money(forecast)}.`});
+  else if(forecast<save.career.budget*.15)risks.push({id:"cash",severity:"medium",title:"Niska rezerwa finansowa",detail:`Prognozowane saldo na Event Day: ${money(forecast)}.`});
+  if(sponsorRisk>0)risks.push({id:"sponsor",severity:days<=45?"high":"medium",title:"Ryzyko kar sponsorskich",detail:`Przewidywane kary: ${money(sponsorRisk)}.`});
+  if(save.ticketing.salesOpened&&projectedAttendance(save)<save.ticketing.capacity*.35)risks.push({id:"sales",severity:days<=60?"high":"medium",title:"Słaba prognoza frekwencji",detail:`Prognoza: ${Math.round(projectedAttendance(save)/save.ticketing.capacity*100)}% pojemności.`});
+  if(days<=60&&ready<70)risks.push({id:"readiness",severity:"high",title:"Gotowość poniżej bezpiecznego poziomu",detail:`Aktualna gotowość: ${ready}%.`});
+  if(!risks.length)risks.push({id:"stable",severity:"low",title:"Brak krytycznych zagrożeń",detail:"Najważniejsze obszary sezonu są obecnie pod kontrolą."});
+  return risks;
+};
+
+export const commandDeadlines=(save:SaveGame):CommandDeadline[]=>{
+  const days=daysBetween(save.currentDate,save.career.eventDate);
+  const confirmed=save.contacts.filter(c=>c.status==="confirmed").length;
+  const partners=save.sponsors.filter(s=>s.status==="partner").length;
+  const criticalOps=["ops-plan","display-zone","emergency-plan"].every(id=>save.operations.find(o=>o.id===id)?.completed);
+  const criticalInfra=["aircraft-apron","public-zone","emergency-access"].every(id=>save.infrastructure.find(i=>i.id===id)?.completed);
+  const items=[
+    {id:"participants",days:240,title:"Zamknij rdzeń programu",detail:"Minimum 2 potwierdzonych uczestników.",done:confirmed>=2},
+    {id:"sponsors",days:180,title:"Zabezpiecz partnerów komercyjnych",detail:"Minimum 1 aktywny sponsor.",done:partners>=1},
+    {id:"tickets",days:150,title:"Uruchom sprzedaż biletów",detail:"Sprzedaż powinna działać przed fazą wysokiego popytu.",done:save.ticketing.salesOpened},
+    {id:"operations",days:90,title:"Zamknij kluczowe operacje",detail:"Plan lotniska, strefa pokazów i plan kryzysowy.",done:criticalOps},
+    {id:"infrastructure",days:60,title:"Zamknij krytyczną infrastrukturę",detail:"Płyta, strefa publiczności i drogi ratownicze.",done:criticalInfra},
+    {id:"flight",days:30,title:"Zatwierdź finalny Flight Program",detail:"Wszyscy uczestnicy muszą mieć bezkolizyjne sloty.",done:flightProgramReady(save)}
+  ];
+  return items.map(item=>({...item,status:item.done?"done":days<=item.days?"urgent":"open"} as CommandDeadline));
+};
