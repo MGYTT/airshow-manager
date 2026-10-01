@@ -2,7 +2,7 @@
 import { useEffect,useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Banknote, Cloud, Handshake, LockKeyhole, LogIn, Plane, ShieldCheck, Ticket, UserPlus, Users } from "lucide-react";
-import { loadCloudSave } from "../lib/cloudSave";
+import { loadCloudSave,loadUserCache } from "../lib/cloudSave";
 import { useAuth } from "./AuthProvider";
 import ThemeToggle from "./ThemeToggle";
 import styles from "../app/page.module.css";
@@ -24,7 +24,7 @@ export default function Landing(){
  useEffect(()=>{
    if(!user){setHasSave(false);return}
    let cancelled=false;
-   loadCloudSave(user.id).then(info=>{if(!cancelled)setHasSave(Boolean(info.game))}).catch(()=>{if(!cancelled)setHasSave(false)});
+   loadCloudSave(user.id).then(info=>{if(!cancelled)setHasSave(Boolean(info.game)||Boolean(loadUserCache(user.id)))}).catch(()=>{if(!cancelled)setHasSave(Boolean(loadUserCache(user.id)))});
    return()=>{cancelled=true};
  },[user]);
 
