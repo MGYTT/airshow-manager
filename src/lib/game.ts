@@ -178,7 +178,7 @@ const hydrateTicketing=(old:any):Ticketing=>{
 };
 
 function migrateV15(old:any):SaveGame{
-  return {...old,version:16,staff:old.staff??initialStaff,staff:old.staff??initialStaff};
+  return {...old,version:16,staff:old.staff??initialStaff};
 }
 
 function migrateV14(old:any):SaveGame{
@@ -352,7 +352,7 @@ export const operationReadiness=(save:SaveGame)=>save.operations.filter(o=>o.com
 export const ticketDemandByTier=(save:SaveGame):Record<TicketTierId,number>=>{
   if(!save.ticketing.salesOpened)return {early:0,regular:0,vip:0};
   const confirmed=save.contacts.filter(c=>c.status==="confirmed").length;
-  const marketingLevel=save.departments.find(d=>d.id==="marketing")?.level??1;
+  const marketingLevel=effectiveDepartmentLevel(save,"marketing");
   const days=daysBetween(save.currentDate,save.career.eventDate);
   const base=Math.max(20,save.ticketing.capacity/220);
   const attractiveness=.38+confirmed*.18+(save.awareness/100)*.75+(save.reputation/100)*.45+marketingLevel*.06;
@@ -434,7 +434,7 @@ export const startNextSeason=(save:SaveGame,scaleId:ScaleId):SaveGame=>{
     ticketing:{price:99,capacity:scaleCapacity[scaleId],sold:0,salesOpened:false,tiers:createTicketTiers(scaleCapacity[scaleId])},
     feed:[`Rozpoczyna się sezon ${save.season+1}. Budżet otwarcia: ${money(budget.total)}.`],
     transactions:[{id:`opening-s${save.season+1}`,date:currentDate,label:`Budżet otwarcia sezonu ${save.season+1}`,amount:budget.total,category:"start"}],
-    milestonesSeen:[],eventResult:null,seasonHistory:[...save.seasonHistory,record],activeIncident:null,incidentsSeen:[],flightProgram:[]
+    milestonesSeen:[],eventResult:null,seasonHistory:[...save.seasonHistory,record],activeIncident:null,incidentsSeen:[],flightProgram:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}
   };
 };
 
