@@ -213,7 +213,7 @@ const hydrateParticipantLogistics=(old:any,contacts:Contact[],eventDate:string):
 
 function migrateV17(old:any):SaveGame{
   const profile=hydrateReputation(old);
-  return {...old,version:18,reputationProfile:hydrateReputation(old),reputationProfile:profile,reputation:Math.round((profile.public+profile.commercial+profile.aviation)/3)};
+  return {...old,version:18,reputationProfile:profile,reputation:Math.round((profile.public+profile.commercial+profile.aviation)/3)};
 }
 
 function migrateV16(old:any):SaveGame{
@@ -275,7 +275,7 @@ function migrateV3(old:any):SaveGame{
 
 function migrateV2(old:any):SaveGame{
   return {
-    version:18,locale:old.locale??"pl",season:old.season??1,crisisReadiness:old.crisisReadiness??0,career:old.career,currentDate:old.currentDate,cash:old.cash,reputation:old.reputation??12,
+    version:18,locale:old.locale??"pl",season:old.season??1,reputationProfile:hydrateReputation(old),crisisReadiness:old.crisisReadiness??0,career:old.career,currentDate:old.currentDate,cash:old.cash,reputation:old.reputation??12,
     contacts:hydrateContacts(old.contacts),sponsors:initialSponsors,departments:initialDepartments,staff:initialStaff,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:99,capacity:legacyScaleCapacity(old),sold:0,salesOpened:false,tiers:createTicketTiers(legacyScaleCapacity(old))},feed:old.feed??[],
     participantLogistics:[],transactions:old.transactions??[{id:"migration-v2",date:old.currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash,category:"start"}],
     milestonesSeen:[],eventResult:null,seasonHistory:old.seasonHistory??[],activeIncident:null,incidentsSeen:old.incidentsSeen??[],flightProgram:old.flightProgram??[],eventDay:old.eventDay??{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}
@@ -290,7 +290,7 @@ function migrateV1(old:any):SaveGame{
     ...initialContacts.find(base=>base.id===c.id)!,id:c.id,name:c.name,country:c.country,aircraft:c.aircraft,fee:c.fee,hotel:c.hotel,fuel:c.fuel,support:c.support,
     status:({Available:"available",Invited:"invited",Interested:"interested",Declined:"declined",Confirmed:"confirmed"} as Record<string,Status>)[c.status]??c.status??"available",replyAt:null,offerExpiresAt:null,negotiationRound:0,agreedDiscount:0
   }));
-  return {version:18,locale:"pl",season:1,crisisReadiness:0,career:{eventName:old.career?.eventName??"Mój AirShow",location:old.career?.location??"Polska",eventDate,scaleId:scale.id,budget:old.career?.budget??scale.budget},currentDate,cash:old.cash??scale.budget,reputation:12,contacts,sponsors:initialSponsors,departments:initialDepartments,staff:initialStaff,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:99,capacity:scaleCapacity[scale.id],sold:0,salesOpened:false,tiers:createTicketTiers(scaleCapacity[scale.id])},feed:old.feed??[],participantLogistics:[],transactions:[{id:"migration-v1",date:currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash??scale.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[],activeIncident:null,incidentsSeen:[],flightProgram:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
+  return {version:18,locale:"pl",season:1,reputationProfile:{public:12,commercial:12,aviation:12},crisisReadiness:0,career:{eventName:old.career?.eventName??"Mój AirShow",location:old.career?.location??"Polska",eventDate,scaleId:scale.id,budget:old.career?.budget??scale.budget},currentDate,cash:old.cash??scale.budget,reputation:12,contacts,sponsors:initialSponsors,departments:initialDepartments,staff:initialStaff,operations:initialOperations,marketing:initialMarketing,infrastructure:initialInfrastructure,awareness:8,ticketing:{price:99,capacity:scaleCapacity[scale.id],sold:0,salesOpened:false,tiers:createTicketTiers(scaleCapacity[scale.id])},feed:old.feed??[],participantLogistics:[],transactions:[{id:"migration-v1",date:currentDate,label:"Saldo przeniesione z poprzedniej wersji",amount:old.cash??scale.budget,category:"start"}],milestonesSeen:[],eventResult:null,seasonHistory:[],activeIncident:null,incidentsSeen:[],flightProgram:[],eventDay:{status:"idle",currentIndex:0,delay:0,scoreModifier:0,completedSlotIds:[],canceledSlotIds:[],log:[],pendingIssue:null}};
 }
 
 export function loadGame():SaveGame|null{
