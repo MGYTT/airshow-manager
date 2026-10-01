@@ -1046,3 +1046,99 @@
   .commandHero{padding:23px}.commandHero h2{font-size:27px}
   .surface{padding:18px}
 }
+
+
+/* Final polish: depth, interactions, forms and density */
+:is(.surface,.kpi,.sponsorCard,.departmentCard,.staffCard,.staffHired,.ticketTierCard,.infrastructureCard,.infrastructureDone,.logisticsCard,.logisticsReady){
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease
+}
+:is(.surface,.kpi,.sponsorCard,.departmentCard,.staffCard,.staffHired,.ticketTierCard,.infrastructureCard,.logisticsCard):hover{
+  border-color:color-mix(in srgb,var(--accent) 25%,var(--line))!important;
+  box-shadow:var(--glow)
+}
+.kpi:hover{transform:translateY(-2px)}
+.sponsorCard:hover,.departmentCard:hover,.staffCard:hover,.ticketTierCard:hover,.infrastructureCard:hover,.logisticsCard:hover{transform:translateY(-2px)}
+
+.setupFields input,.setupFields select,.logisticsSchedule input,.programTime input{
+  border-color:var(--line);background:var(--surface-2);box-shadow:inset 0 1px 0 rgba(255,255,255,.025)
+}
+.setupFields input:hover,.setupFields select:hover,.logisticsSchedule input:hover,.programTime input:hover{border-color:var(--line-strong)}
+.setupFields input:focus,.setupFields select:focus,.logisticsSchedule input:focus,.programTime input:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)
+}
+
+.sponsorValue,.ticketSalesLive,.negotiationNote,.requirementBox,.nextBudget,.offerStrip{
+  border-color:var(--line)!important;
+  background:linear-gradient(145deg,var(--surface-2),color-mix(in srgb,var(--surface-2) 94%,var(--accent) 6%))!important
+}
+.sponsorValue strong,.ticketTierPrice strong,.resultScore strong{letter-spacing:-.035em}
+
+.operationCard,.operationDone{border-radius:13px!important}
+.operationDone{box-shadow:inset 3px 0 0 var(--success),0 10px 30px rgba(0,0,0,.06)}
+.infrastructureDone,.staffHired{box-shadow:inset 3px 0 0 var(--success),0 10px 30px rgba(0,0,0,.06)}
+
+.deadlineUrgent{background:color-mix(in srgb,var(--danger) 5%,transparent)}
+.riskHighCard{background:color-mix(in srgb,var(--danger) 5%,transparent)}
+.riskMediumCard{background:color-mix(in srgb,var(--warning) 4%,transparent)}
+.riskLowCard{background:color-mix(in srgb,var(--success) 3%,transparent)}
+.deadlineDone{background:color-mix(in srgb,var(--success) 2.5%,transparent)}
+
+.programSlot{transition:.15s ease}
+.programSlot:hover{background:color-mix(in srgb,var(--surface-2) 74%,transparent)}
+.programTime input{border-radius:8px}
+.programControl button,.programRemove{border-radius:8px}
+
+.weatherCards article{transition:.17s ease}
+.weatherCards article:hover{background:color-mix(in srgb,var(--surface-2) 86%,var(--accent) 14%);transform:translateY(-1px)}
+.weatherForecast,.programPool,.programBoard,.programIssues,.staffSection{overflow:hidden;border-radius:15px}
+
+.ticketTierCard>header>b,.sponsorCard>header>b,.staffCard>header>b,.staffHired>header>b,
+.logisticsCard>header>b,.logisticsReady>header>b{
+  padding:5px 7px;border-radius:999px;background:color-mix(in srgb,currentColor 8%,transparent)
+}
+
+.incidentChoices button,.liveDecision button,.nextScaleCard,.nextScaleActive{
+  border-radius:12px!important;transition:.17s ease
+}
+.incidentChoices button:hover,.liveDecision button:hover,.nextScaleCard:hover,.nextScaleActive:hover{
+  transform:translateY(-2px);box-shadow:var(--glow)
+}
+
+.financeSummary,.ticketSummary,.teamSummary,.operationsSummary,.infrastructureSummary,
+.marketingSummary,.sponsorSummary,.participantSummary,.logisticsSummary,.weatherSummary,.liveSummary{
+  padding:4px 0 18px!important
+}
+
+.ledger{overflow:hidden}
+.ledger>div{padding-left:4px;padding-right:4px}
+.ledger>div:first-child{border-top:0}
+
+.siteFooter{opacity:.85}
+.previewMetrics span,.visualReadout,.setupSummary{border-color:var(--line)}
+.systemGrid article{position:relative;overflow:hidden}
+.systemGrid article:after{
+  content:"";position:absolute;right:-50px;bottom:-65px;width:150px;height:150px;border-radius:50%;
+  border:1px solid color-mix(in srgb,var(--accent) 12%,transparent)
+}
+
+/* compact mobile app-like navigation */
+@media(max-width:940px){
+  .sidebar{grid-template-columns:auto 1fr}
+  .sidebar nav{justify-self:end;max-width:calc(100vw - 78px)}
+  .navIcon{width:34px;height:34px}
+  .gameBrand>div{display:none}
+}
+@media(max-width:620px){
+  .gameMain{padding-left:12px;padding-right:12px}
+  .gameHeader{min-height:88px;padding:14px 2px}
+  .headerIdentity>span{font-size:7px!important}
+  .headerIdentity h1{font-size:19px;max-width:185px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .headerIdentity p{font-size:9px}
+  .clock>div:first-child{padding-right:2px;border-left:0;text-align:right}
+  .moduleHeader{border-radius:14px}
+  .moduleHeader>b{display:none}
+  .kpi{min-height:104px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
