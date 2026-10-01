@@ -1,7 +1,7 @@
 # AirShow Manager — Supabase Auth & Cloud Save setup
 
 ## 1. Create a Supabase project
-Create a project in Supabase and keep the project URL and public anon/publishable key.
+Create a project in Supabase and keep the project URL and publishable key.
 
 Do **not** expose the service role key in this application.
 
@@ -29,8 +29,8 @@ In **Authentication → URL Configuration** set:
 Add these for Production, Preview, and Development:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_PUBLIC_ANON_OR_PUBLISHABLE_KEY
+NEXT_PUBLIC_SUPABASE_URL=https://uuhjvtpuzohzqhjnffzd.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLIC_ANON_OR_PUBLISHABLE_KEY
 ```
 
 The same names are documented in `.env.example`.
