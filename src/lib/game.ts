@@ -475,11 +475,17 @@ export const finishEventDay=(save:SaveGame):SaveGame=>{
   const program=sortedFlightProgram(save);
   const completion=program.length?save.eventDay.completedSlotIds.length/program.length:0;
   const delayPenalty=Math.min(18,Math.floor(save.eventDay.delay/10)*2);
+  const sponsorPenaltyTotal=totalSponsorPenalty(save);
+  const brokenSponsors=save.sponsors.filter(s=>sponsorPenalty(save,s)>0).length;
   const base=calculateEventResult(save);
-  const score=Math.max(0,Math.min(100,Math.round(base.score+save.eventDay.scoreModifier+(completion-1)*24-delayPenalty)));
+  const sponsorScorePenalty=brokenSponsors*4;
+  const score=Math.max(0,Math.min(100,Math.round(base.score+save.eventDay.scoreModifier+(completion-1)*24-delayPenalty-sponsorScorePenalty)));
   const reputationGain=score>=85?10:score>=70?6:score>=55?3:0;
+  const reputationPenalty=brokenSponsors*2;
   const result:EventResult={...base,score,reputationGain,grade:score>=85?"Excellent":score>=70?"Strong":"Operational"};
-  return {...save,eventResult:result,reputation:Math.min(100,save.reputation+reputationGain),eventDay:{...save.eventDay,status:"completed",pendingIssue:null,log:[`Event Day zakończony. Wynik: ${score}/100.`,...save.eventDay.log]},feed:[`Event Day zakończony. Wynik sezonu: ${score}/100 · reputacja +${reputationGain}.`,...save.feed].slice(0,10)};
+  const penaltyTx=sponsorPenaltyTotal>0?{id:`sponsor-penalty-${Date.now()}`,date:save.currentDate,label:"Kary za niewypełnione zobowiązania sponsorskie",amount:-sponsorPenaltyTotal,category:"sponsor" as const}:null;
+  const feedLine=sponsorPenaltyTotal>0?`Event Day zakończony. Wynik ${score}/100. Rozliczenie sponsorów: -${money(sponsorPenaltyTotal)}.`:`Event Day zakończony. Wynik sezonu: ${score}/100 · reputacja +${reputationGain}.`;
+  return {...save,cash:save.cash-sponsorPenaltyTotal,eventResult:result,reputation:Math.max(0,Math.min(100,save.reputation+reputationGain-reputationPenalty)),transactions:penaltyTx?[penaltyTx,...save.transactions]:save.transactions,eventDay:{...save.eventDay,status:"completed",pendingIssue:null,log:[`Event Day zakończony. Wynik: ${score}/100.`,...save.eventDay.log]},feed:[feedLine,...save.feed].slice(0,10)};
 };
 
 
@@ -504,3 +510,19 @@ export const sponsorPenalty=(save:SaveGame,sponsor:Sponsor)=>{
 };
 
 export const totalSponsorPenalty=(save:SaveGame)=>save.sponsors.reduce((sum,s)=>sum+sponsorPenalty(save,s),0);
+
+export const sponsorNegotiationRisk=(save:SaveGame,sponsor:Sponsor)=>{
+  const commercialLevel=save.departments.find(d=>d.id==="commercial")?.level??1;
+  const leverage=save.reputation-sponsor.minReputation+commercialLevel*4-sponsor.negotiationRound*5;
+  return leverage>=14?"low":leverage>=7?"medium":"high";
+};
+
+export const negotiateSponsorOffer=(save:SaveGame,sponsor:Sponsor)=>{
+  const commercialLevel=save.departments.find(d=>d.id==="commercial")?.level??1;
+  const leverage=save.reputation-sponsor.minReputation+commercialLevel*4-sponsor.negotiationRound*5;
+  const nextRound=sponsor.negotiationRound+1;
+  if(nextRound>2||!sponsor.offer)return {walked:false,offer:sponsor.offer??0,nextRound:sponsor.negotiationRound};
+  const increase=nextRound===1?(leverage>=8?.08:leverage>=3?.04:0):(leverage>=13?.06:leverage>=8?.03:0);
+  if(increase===0&&leverage<3)return {walked:true,offer:sponsor.offer,nextRound};
+  return {walked:false,offer:Math.round(sponsor.offer*(1+increase)),nextRound};
+};
