@@ -1142,3 +1142,106 @@
 @media(prefers-reduced-motion:reduce){
   .gameShell,.gameShell *,.landing,.landing *,.setup,.setup *{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
+
+
+/* Account & authentication */
+.accountEntry{
+  height:36px;padding:0 13px;border:1px solid var(--line);border-radius:10px;
+  background:var(--surface);color:var(--text);font-size:10px;font-weight:760;cursor:pointer
+}
+.accountEntry:hover{border-color:var(--accent);color:var(--accent);box-shadow:var(--glow)}
+
+.authPage,.accountPage{min-height:100vh;padding:0 clamp(18px,4vw,58px) 60px;background:
+  radial-gradient(circle at 84% 2%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 30%),
+  radial-gradient(circle at 4% 92%,color-mix(in srgb,var(--accent-2) 7%,transparent),transparent 26%),
+  var(--bg)}
+.authTopbar,.accountTopbar{
+  max-width:1440px;height:82px;margin:auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  border-bottom:1px solid var(--line)
+}
+.authTopbar>button,.accountTopbar>button{
+  justify-self:start;border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer
+}
+.authTopbar>button:hover,.accountTopbar>button:hover{color:var(--accent)}
+.authTopbar>.themeCompact,.accountTopbar>.themeCompact{justify-self:end}
+
+.authLayout{max-width:1180px;margin:0 auto;padding:78px 0;display:grid;grid-template-columns:.9fr 1.1fr;gap:72px;align-items:center}
+.authStory>span,.authHeading>span,.accountHero>div>span,.accountCard header span{
+  color:var(--accent-2);font-size:9px;font-weight:850;letter-spacing:.14em
+}
+.authStory h1{margin:16px 0 22px;font-size:clamp(46px,5vw,72px);line-height:.98;letter-spacing:-.055em}
+.authStory h1 em{font-style:normal;color:var(--muted)}
+.authStory>p{max-width:520px;margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+.authBenefits{margin-top:34px;display:grid;gap:10px}
+.authBenefits>div{
+  display:grid;grid-template-columns:38px 1fr;gap:12px;align-items:center;padding:13px 14px;
+  border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--surface) 82%,transparent)
+}
+.authBenefits svg{color:var(--accent)}
+.authBenefits span{display:flex;flex-direction:column;gap:3px}.authBenefits b{font-size:11px}.authBenefits small{font-size:9px;color:var(--muted)}
+
+.authCard{
+  padding:28px;border:1px solid color-mix(in srgb,var(--accent) 18%,var(--line));border-radius:20px;
+  background:linear-gradient(155deg,var(--surface),var(--surface-2));box-shadow:var(--shadow-lg)
+}
+.authTabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border:1px solid var(--line);border-radius:11px;background:var(--surface-2)}
+.authTabs button{height:38px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:10px;font-weight:800;cursor:pointer}
+.authTabs button.authTabActive{background:var(--surface);color:var(--text);box-shadow:0 5px 16px rgba(0,0,0,.1)}
+.authHeading{padding:26px 2px 18px}.authHeading h2{margin:7px 0 7px;font-size:27px;letter-spacing:-.035em}.authHeading p{margin:0;color:var(--muted);font-size:11px;line-height:1.6}
+
+.authForm{display:grid;gap:14px}.authForm label{display:grid;gap:7px}.authForm label>span{font-size:9px;font-weight:800;color:var(--quiet);letter-spacing:.06em;text-transform:uppercase}
+.authForm label>div{height:46px;display:flex;align-items:center;gap:10px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.authForm label>div:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent)}
+.authForm label svg{color:var(--quiet);flex:none}.authForm input{width:100%;border:0;outline:0;background:transparent;color:var(--text);font-size:12px}
+.authSubmit{
+  height:48px;margin-top:4px;padding:0 15px;border:0;border-radius:11px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 62%,var(--accent-2)));
+  color:white;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:850;cursor:pointer;box-shadow:0 12px 26px color-mix(in srgb,var(--accent) 18%,transparent)
+}
+.authSubmit:hover:not(:disabled){transform:translateY(-1px)}.authSubmit:disabled{opacity:.45;cursor:not-allowed}
+.authLink{margin:16px auto 0;display:block;border:0;background:transparent;color:var(--accent);font-size:10px;font-weight:750;cursor:pointer}
+.authCard>footer{margin-top:22px;padding-top:15px;border-top:1px solid var(--line);display:flex;gap:8px;color:var(--quiet);font-size:9px;line-height:1.45}
+.authConfigWarning,.authError,.authSuccess,.accountNotice{
+  margin-bottom:14px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:10px;line-height:1.5
+}
+.authConfigWarning{border-color:color-mix(in srgb,var(--warning) 40%,var(--line));background:color-mix(in srgb,var(--warning) 6%,var(--surface));display:flex;flex-direction:column;gap:3px}
+.authError{border-color:color-mix(in srgb,var(--danger) 45%,var(--line));background:color-mix(in srgb,var(--danger) 6%,var(--surface));color:var(--danger)}
+.authSuccess{border-color:color-mix(in srgb,var(--success) 45%,var(--line));background:color-mix(in srgb,var(--success) 6%,var(--surface));color:var(--success)}
+
+.accountHero{max-width:1180px;margin:54px auto 20px;padding:26px 28px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,var(--surface),var(--surface-2));display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
+.accountHero h1{margin:6px 0 4px;font-size:29px}.accountHero p{margin:0;color:var(--muted);font-size:11px}
+.accountHero>button{height:38px;padding:0 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);display:flex;align-items:center;gap:8px;font-size:10px;font-weight:750;cursor:pointer}
+.accountNotice{max-width:1180px;margin:0 auto 16px;display:flex;align-items:center;gap:10px;border-color:color-mix(in srgb,var(--accent) 35%,var(--line));background:color-mix(in srgb,var(--accent) 6%,var(--surface))}
+.accountPage>.authSuccess,.accountPage>.authError{max-width:1180px;margin-left:auto;margin-right:auto}
+.accountGrid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.accountCard{padding:20px;border:1px solid var(--line);border-radius:15px;background:linear-gradient(155deg,var(--surface),var(--surface-2));box-shadow:var(--shadow)}
+.accountCard>header{display:flex;gap:11px;align-items:center;padding-bottom:15px;border-bottom:1px solid var(--line)}
+.accountCard>header svg{color:var(--accent)}.accountCard h2{margin:4px 0 0;font-size:16px}
+.accountCard form{display:grid;gap:12px;margin-top:16px}.accountCard label{display:grid;gap:6px;color:var(--quiet);font-size:9px;font-weight:750}
+.accountCard input{height:40px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--text);padding:0 10px;font-size:11px}
+.accountCard form>button,.dangerButton{height:38px;border:1px solid var(--line-strong);border-radius:9px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;gap:7px;font-size:10px;font-weight:780;cursor:pointer}
+.accountCard form>button:hover{border-color:var(--accent);color:var(--accent)}
+.cloudStatus{padding:18px 0}.cloudStatus>b{font-size:9px;letter-spacing:.08em}.cloudStatus p{font-size:11px;line-height:1.55;color:var(--muted)}.cloudStatus small{font-size:9px;color:var(--quiet)}
+.dangerButton{width:100%;border-color:color-mix(in srgb,var(--danger) 35%,var(--line));color:var(--danger)}
+
+.sidebarSync{
+  margin:6px 5px 2px;padding:8px 10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;align-items:center
+}
+.sidebarSync span,.sidebarSync b{font-size:7px;font-weight:850;letter-spacing:.12em}
+.sidebarSync span{color:var(--quiet)}
+.sidebarActions{display:grid!important;grid-template-columns:1fr 1fr!important}
+.sidebarActions>.themeToggle{grid-column:1/-1}
+.sidebarActions>button{height:34px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--muted);font-size:9px;font-weight:700;cursor:pointer}
+.sidebarActions>button:hover{border-color:var(--accent);color:var(--accent)}
+
+@media(max-width:900px){
+  .authLayout{grid-template-columns:1fr;gap:30px;padding:44px 0}.authStory{display:none}
+  .accountGrid{grid-template-columns:1fr 1fr}
+  .sidebarSync{display:none}
+}
+@media(max-width:650px){
+  .authTopbar,.accountTopbar{grid-template-columns:1fr auto}.authTopbar>.wordmark,.accountTopbar>.wordmark{display:none}
+  .authLayout{padding:28px 0}.authCard{padding:20px}
+  .accountHero{margin-top:28px;align-items:flex-start;gap:16px}.accountHero h1{font-size:23px}
+  .accountGrid{grid-template-columns:1fr}
+  .headerActions .version{display:none}
+}
